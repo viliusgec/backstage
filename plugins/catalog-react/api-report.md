@@ -13,6 +13,7 @@ import { ComponentProps } from 'react';
 import { CompoundEntityRef } from '@backstage/catalog-model';
 import { Entity } from '@backstage/catalog-model';
 import { IconButton } from '@material-ui/core';
+import { IconComponent } from '@backstage/core-plugin-api';
 import { InfoCardVariants } from '@backstage/core-components';
 import { LinkProps } from '@backstage/core-components';
 import { Observable } from '@backstage/types';
@@ -70,6 +71,7 @@ export const CatalogFilterLayout: {
 export type CatalogReactComponentsNameToClassKey = {
   CatalogReactUserListPicker: CatalogReactUserListPickerClassKey;
   CatalogReactEntityLifecyclePicker: CatalogReactEntityLifecyclePickerClassKey;
+  CatalogReactEntityRefLink: CatalogReactEntityRefLinkClassKey;
   CatalogReactEntitySearchBar: CatalogReactEntitySearchBarClassKey;
   CatalogReactEntityTagPicker: CatalogReactEntityTagPickerClassKey;
   CatalogReactEntityOwnerPicker: CatalogReactEntityOwnerPickerClassKey;
@@ -87,6 +89,9 @@ export type CatalogReactEntityOwnerPickerClassKey = 'input';
 
 // @public (undocumented)
 export type CatalogReactEntityProcessingStatusPickerClassKey = 'input';
+
+// @public (undocumented)
+export type CatalogReactEntityRefLinkClassKey = 'icon';
 
 // @public (undocumented)
 export type CatalogReactEntitySearchBarClassKey = 'searchToolbar' | 'input';
@@ -279,6 +284,18 @@ export type EntityPeekAheadPopoverProps = PropsWithChildren<{
   delayTime?: number;
 }>;
 
+// @public
+export interface EntityPresentationApi {
+  // (undocumented)
+  textualEntityRef(options: {
+    entityRef: string;
+    variant?: string;
+  }): Promise<EntityRefPresentation>;
+}
+
+// @public
+export const entityPresentationApiRef: ApiRef<EntityPresentationApi>;
+
 // @public (undocumented)
 export const EntityProcessingStatusPicker: () => JSX.Element;
 
@@ -312,21 +329,24 @@ export function EntityRefLinks<
 // @public
 export type EntityRefLinksProps<
   TRef extends string | CompoundEntityRef | Entity,
-> = (
-  | {
-      defaultKind?: string;
-      entityRefs: TRef[];
-      fetchEntities?: false;
-      getTitle?(entity: TRef): string | undefined;
-    }
-  | {
-      defaultKind?: string;
-      entityRefs: TRef[];
-      fetchEntities: true;
-      getTitle(entity: Entity): string | undefined;
-    }
-) &
-  Omit<LinkProps, 'to'>;
+> = {
+  defaultKind?: string;
+  entityRefs: TRef[];
+  fetchEntities?: boolean;
+  getTitle?(entity: TRef): string | undefined;
+} & Omit<LinkProps, 'to'>;
+
+// @public
+export interface EntityRefPresentation {
+  // (undocumented)
+  entityRef: string;
+  // (undocumented)
+  Icon?: IconComponent | undefined;
+  // (undocumented)
+  primaryTitle: string;
+  // (undocumented)
+  secondaryTitle?: string;
+}
 
 // @public
 export function entityRouteParams(entity: Entity): {

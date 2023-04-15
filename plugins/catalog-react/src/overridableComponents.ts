@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { Overrides } from '@material-ui/core/styles/overrides';
 import { StyleRules } from '@material-ui/core/styles/withStyles';
 
 import {
   CatalogReactUserListPickerClassKey,
   CatalogReactEntityLifecyclePickerClassKey,
+  CatalogReactEntityRefLinkClassKey,
   CatalogReactEntitySearchBarClassKey,
   CatalogReactEntityTagPickerClassKey,
   CatalogReactEntityOwnerPickerClassKey,
@@ -29,6 +31,7 @@ import {
 export type CatalogReactComponentsNameToClassKey = {
   CatalogReactUserListPicker: CatalogReactUserListPickerClassKey;
   CatalogReactEntityLifecyclePicker: CatalogReactEntityLifecyclePickerClassKey;
+  CatalogReactEntityRefLink: CatalogReactEntityRefLinkClassKey;
   CatalogReactEntitySearchBar: CatalogReactEntitySearchBarClassKey;
   CatalogReactEntityTagPicker: CatalogReactEntityTagPickerClassKey;
   CatalogReactEntityOwnerPicker: CatalogReactEntityOwnerPickerClassKey;

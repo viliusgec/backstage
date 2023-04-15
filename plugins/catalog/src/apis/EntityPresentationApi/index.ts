@@ -14,5 +14,7 @@
  * limitations under the License.
  */
 
-export * from './EntityPresentationApi';
-export * from './StarredEntitiesApi';
+export {
+  DefaultEntityPresentationApi,
+  type DefaultEntityPresentationApiOptions,
+} from './DefaultEntityPresentationApi';

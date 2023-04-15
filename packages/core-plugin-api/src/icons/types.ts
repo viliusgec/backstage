@@ -33,5 +33,5 @@ import { ComponentType } from 'react';
  * @public
  */
 export type IconComponent = ComponentType<{
-  fontSize?: 'default' | 'small' | 'large';
+  fontSize?: 'default' | 'small' | 'large' | 'inherit';
 }>;

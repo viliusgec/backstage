@@ -184,7 +184,7 @@ export interface CatalogTableRow {
   entity: Entity;
   // (undocumented)
   resolved: {
-    name: string;
+    entityRef: string;
     partOfSystemRelationTitle?: string;
     partOfSystemRelations: CompoundEntityRef[];
     ownedByRelationsTitle?: string;
