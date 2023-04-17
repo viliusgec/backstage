@@ -22,11 +22,10 @@ import {
   stringifyEntityRef,
 } from '@backstage/catalog-model';
 import { Link, LinkProps } from '@backstage/core-components';
-import { IconComponent, useApi, useRouteRef } from '@backstage/core-plugin-api';
+import { useRouteRef } from '@backstage/core-plugin-api';
 import { Box, Theme, Tooltip, makeStyles } from '@material-ui/core';
 import React, { forwardRef } from 'react';
-import useAsync from 'react-use/lib/useAsync';
-import { entityPresentationApiRef } from '../../apis';
+import { useEntityPresentation } from '../../apis';
 import { entityRouteRef } from '../../routes';
 
 /** @public */
@@ -39,7 +38,7 @@ const useStyles = makeStyles(
       alignItems: 'center',
     },
     icon: {
-      marginRight: theme.spacing(0.5),
+      marginLeft: theme.spacing(0.5),
       color: theme.palette.text.secondary,
       lineHeight: 0,
     },
@@ -73,39 +72,13 @@ export const EntityRefLink = forwardRef<any, EntityRefLinkProps>(
 
     const classes = useStyles();
     const entityRoute = useEntityRoute(props.entityRef);
-    const presentationApi = useApi(entityPresentationApiRef);
-
-    // Compute the basic data that underpins the presentation of the entity ref
-    const presentation = useAsync(async (): Promise<{
-      content: React.ReactNode;
-      tooltip?: React.ReactNode;
-      Icon?: IconComponent;
-    }> => {
-      if (children) {
-        return { content: children };
-      } else if (title) {
-        return { content: title };
-      }
-
-      try {
-        const p = await presentationApi.textualEntityRef({
-          entityRef: entityRefString,
-          variant: 'icon',
-        });
-        return {
-          content: p.primaryTitle,
-          tooltip: p.secondaryTitle,
-          Icon: p.Icon,
-        };
-      } catch {
-        return { content: entityRefString };
-      }
-    }, [entityRef, defaultKind, title, children, presentationApi]);
+    const { primaryTitle, secondaryTitle, Icon } = useEntityPresentation(
+      entityRefString,
+      { variant: 'icon' },
+    );
 
     // The innermost "body" content
-    let content = (
-      <>{presentation.loading ? '...' : presentation.value?.content}</>
-    );
+    let content = <>{primaryTitle}</>;
 
     // The link that wraps it
     content = (
@@ -115,21 +88,21 @@ export const EntityRefLink = forwardRef<any, EntityRefLinkProps>(
     );
 
     // Optionally, an icon and wrapper around them both
-    if (presentation.value?.Icon) {
+    if (Icon) {
       content = (
         <Box component="span" className={classes.iconContainer}>
-          <Box component="span" className={classes.icon}>
-            <presentation.value.Icon fontSize="inherit" />
-          </Box>
           {content}
+          <Box component="span" className={classes.icon}>
+            <Icon fontSize="inherit" />
+          </Box>
         </Box>
       );
     }
 
     // Optionally, a tooltip as the outermost layer
-    if (presentation.value?.tooltip) {
+    if (secondaryTitle) {
       content = (
-        <Tooltip enterDelay={1000} title={presentation.value.tooltip}>
+        <Tooltip enterDelay={1500} title={secondaryTitle}>
           {content}
         </Tooltip>
       );

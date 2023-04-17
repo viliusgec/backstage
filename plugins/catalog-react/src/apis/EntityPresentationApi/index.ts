@@ -18,4 +18,6 @@ export {
   entityPresentationApiRef,
   type EntityPresentationApi,
   type EntityRefPresentation,
+  type EntityRefPresentationSnapshot,
 } from './EntityPresentationApi';
+export { useEntityPresentation } from './useEntityPresentation';

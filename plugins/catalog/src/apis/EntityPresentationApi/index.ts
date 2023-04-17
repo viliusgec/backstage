@@ -17,4 +17,5 @@
 export {
   DefaultEntityPresentationApi,
   type DefaultEntityPresentationApiOptions,
+  type DefaultEntityPresentationApiRenderer,
 } from './DefaultEntityPresentationApi';

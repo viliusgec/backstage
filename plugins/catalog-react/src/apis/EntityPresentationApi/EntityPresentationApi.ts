@@ -19,6 +19,7 @@ import {
   IconComponent,
   createApiRef,
 } from '@backstage/core-plugin-api';
+import { Observable } from '@backstage/types';
 
 /**
  * An API that handles how to represent entities in the interface.
@@ -31,15 +32,25 @@ export const entityPresentationApiRef: ApiRef<EntityPresentationApi> =
   });
 
 /**
+ * The visual presentation of an entity reference at some point in time.
+ *
+ * @public
+ */
+export interface EntityRefPresentationSnapshot {
+  entityRef: string;
+  primaryTitle: string;
+  secondaryTitle?: string;
+  Icon?: IconComponent | undefined;
+}
+
+/**
  * The visual presentation of an entity reference.
  *
  * @public
  */
 export interface EntityRefPresentation {
-  entityRef: string;
-  primaryTitle: string;
-  secondaryTitle?: string;
-  Icon?: IconComponent | undefined;
+  snapshot: EntityRefPresentationSnapshot;
+  update$: Observable<EntityRefPresentationSnapshot>;
 }
 
 /**
@@ -48,8 +59,12 @@ export interface EntityRefPresentation {
  * @public
  */
 export interface EntityPresentationApi {
-  textualEntityRef(options: {
-    entityRef: string;
-    variant?: string;
-  }): Promise<EntityRefPresentation>;
+  forEntityRef(
+    entityRef: string,
+    context?: {
+      variant?: string;
+      defaultKind?: string;
+      defaultNamespace?: string;
+    },
+  ): EntityRefPresentation;
 }
