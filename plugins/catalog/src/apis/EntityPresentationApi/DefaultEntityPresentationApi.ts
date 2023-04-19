@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Entity } from '@backstage/catalog-model';
+import { Entity, stringifyEntityRef } from '@backstage/catalog-model';
 import {
   CatalogApi,
   EntityPresentationApi,
@@ -24,7 +24,11 @@ import {
 import { HumanDuration } from '@backstage/types';
 import DataLoader from 'dataloader';
 import ExpiryMap from 'expiry-map';
-import ObservableImpl from 'zen-observable';
+import uniq from 'lodash/uniq';
+import {
+  default as Observable,
+  default as ObservableImpl,
+} from 'zen-observable';
 import {
   DEFAULT_BATCH_DELAY,
   DEFAULT_CACHE_TTL,
@@ -32,7 +36,6 @@ import {
   defaultRenderer,
 } from './defaults';
 import { durationToMs } from './util';
-import Observable from 'zen-observable';
 
 /**
  * A custom renderer for the {@link DefaultEntityPresentationApi}.
@@ -49,8 +52,8 @@ export interface DefaultEntityPresentationApiRenderer {
    * the set of fields, the more efficient requests will be to the catalog
    * backend.
    *
-   * The default set of fields is: kind, metadata.name, metadata.namespace,
-   * metadata.title, metadata.description, metadata.etag, spec.type, and
+   * The default set of fields is: apiVersion, kind, the scalar metadata fields
+   * (uid, etag, name, namespace, title, description), spec.type, and
    * spec.profile.
    *
    * This field is ignored if async is set to false.
@@ -144,13 +147,15 @@ interface CacheEntry {
 export class DefaultEntityPresentationApi implements EntityPresentationApi {
   // Just to not have to recreate a do-nothing observer over and over
   static readonly #dummyObserver: Observable<EntityRefPresentationSnapshot> =
-    new ObservableImpl(_subscriber => {});
+    new ObservableImpl(subscriber => {
+      subscriber.complete();
+    });
 
-  // This cache holds on to all entity data ever loaded, no matter how old.
-  // Each entry is tagged with a time stamp of when it was inserted. We use
-  // this map to be able to always render SOME data even though the
-  // information is old. Entities change very rarely, so it's likely that the
-  // rendered information was perfectly fine in the first place.
+  // This cache holds on to all entity data ever loaded, no matter how old. Each
+  // entry is tagged with a timestamp of when it was inserted. We use this map
+  // to be able to always render SOME data even though the information is old.
+  // Entities change very rarely, so it's likely that the rendered information
+  // was perfectly fine in the first place.
   readonly #cache: Map<string, CacheEntry>;
   readonly #cacheTtlMs: number;
   readonly #loader: DataLoader<string, Entity | undefined>;
@@ -163,30 +168,29 @@ export class DefaultEntityPresentationApi implements EntityPresentationApi {
     this.#renderer = options.renderer ?? defaultRenderer;
   }
 
-  forEntityRef(
-    entityRef: string,
+  /** {@inheritdoc @backstage/plugin-catalog-react#EntityPresentationApi.forEntity} */
+  forEntity(
+    entityOrRef: Entity | string,
     context?: {
       variant?: string;
       defaultKind?: string;
       defaultNamespace?: string;
     },
   ): EntityRefPresentation {
-    const cached = this.#cache.get(entityRef);
-    const cachedEntity: Entity | undefined = cached?.entity;
-    const cacheNeedsUpdate =
-      !cached || Date.now() - cached.updatedAt > this.#cacheTtlMs;
-    const needsLoad = cacheNeedsUpdate && this.#renderer.async !== false;
+    const { entityRef, entity, needsLoad } =
+      this.#getEntityForInitialRender(entityOrRef);
 
     let snapshot: EntityRefPresentationSnapshot;
     try {
       const rendered = this.#renderer.render({
-        entityRef,
+        entityRef: entityRef,
         loading: needsLoad,
-        entity: cachedEntity,
+        entity: entity,
         context: context || {},
       });
       snapshot = rendered.snapshot;
     } catch {
+      // This is what gets presented if the renderer throws an error
       snapshot = {
         entityRef: entityRef,
         primaryTitle: entityRef,
@@ -200,25 +204,74 @@ export class DefaultEntityPresentationApi implements EntityPresentationApi {
       };
     }
 
-    const updatedEntityPromise = this.#loader
-      .load(entityRef)
-      .catch(() => undefined);
-
     return {
       snapshot,
       update$: new ObservableImpl(subscriber => {
-        updatedEntityPromise.then(entity => {
-          if (entity) {
-            const rendered = this.#renderer.render({
-              entityRef,
-              loading: false,
-              entity: entity,
-              context: context || {},
-            });
-            subscriber.next(rendered.snapshot);
-          }
-        });
+        let aborted = false;
+
+        Promise.resolve()
+          .then(() => this.#loader.load(entityRef))
+          .then(newEntity => {
+            if (
+              !aborted &&
+              newEntity &&
+              newEntity.metadata.etag !== entity?.metadata.etag
+            ) {
+              const rendered = this.#renderer.render({
+                entityRef: entityRef,
+                loading: false,
+                entity: newEntity,
+                context: context || {},
+              });
+              subscriber.next(rendered.snapshot);
+            }
+          })
+          .catch(() => {
+            // We do not propagate errors to the observable here. The
+            // presentation API should be error free and always return SOMETHING
+            // that makes sense to render, and we have already ensured that the
+            // initial snapshot was that.
+          })
+          .finally(() => {
+            if (!aborted) {
+              subscriber.complete();
+            }
+          });
+
+        return () => {
+          aborted = true;
+        };
       }),
+    };
+  }
+
+  #getEntityForInitialRender(entityOrRef: Entity | string): {
+    entity: Entity | undefined;
+    entityRef: string;
+    needsLoad: boolean;
+  } {
+    // If we were given an entity in the first place, we use it for a single
+    // pass of rendering and assume that it's up to date and not partial (i.e.
+    // we expect that it wasn't fetched in such a way that the required fields
+    // of the renderer were excluded)
+    if (typeof entityOrRef !== 'string') {
+      return {
+        entity: entityOrRef,
+        entityRef: stringifyEntityRef(entityOrRef),
+        needsLoad: false,
+      };
+    }
+
+    const cached = this.#cache.get(entityOrRef);
+    const cachedEntity: Entity | undefined = cached?.entity;
+    const cacheNeedsUpdate =
+      !cached || Date.now() - cached.updatedAt > this.#cacheTtlMs;
+    const needsLoad = cacheNeedsUpdate && this.#renderer.async !== false;
+
+    return {
+      entity: cachedEntity,
+      entityRef: entityOrRef,
+      needsLoad,
     };
   }
 
@@ -228,8 +281,9 @@ export class DefaultEntityPresentationApi implements EntityPresentationApi {
     const cacheTtl = durationToMs(options.cacheTtl ?? DEFAULT_CACHE_TTL);
     const batchDelay = durationToMs(options.batchDelay ?? DEFAULT_BATCH_DELAY);
 
-    const entityFields = new Set(DEFAULT_ENTITY_FIELDS);
-    options.renderer?.extraFields?.forEach(field => entityFields.add(field));
+    const entityFields = uniq(
+      [DEFAULT_ENTITY_FIELDS, options.renderer?.extraFields ?? []].flat(),
+    );
 
     return new DataLoader(
       async (entityRefs: readonly string[]) => {
@@ -238,9 +292,11 @@ export class DefaultEntityPresentationApi implements EntityPresentationApi {
           fields: [...entityFields],
         });
 
-        const updatedAt = Date.now();
         entityRefs.forEach((entityRef, index) => {
-          this.#cache.set(entityRef, { updatedAt, entity: items[index] });
+          this.#cache.set(entityRef, {
+            updatedAt: Date.now(),
+            entity: items[index],
+          });
         });
 
         return items;
@@ -250,11 +306,11 @@ export class DefaultEntityPresentationApi implements EntityPresentationApi {
         // This cache is the one that the data loader uses internally for
         // memoizing requests; essentially what it achieves is that multiple
         // requests for the same entity ref will be batched up into a single
-        // request. We put an expiring map here, which makes it so that it
-        // re-fetches data with the expiry cadence of that map. Otherwise it
-        // would only fetch a given ref once and then never try again. This
-        // cache does therefore not fulfill the same purpose as the one that is
-        // in the root of the class.
+        // request and then the resulting promises are held on to. We put an
+        // expiring map here, which makes it so that it re-fetches data with the
+        // expiry cadence of that map. Otherwise it would only fetch a given ref
+        // once and then never try again. This cache does therefore not fulfill
+        // the same purpose as the one that is in the root of the class.
         cacheMap: new ExpiryMap(cacheTtl),
         maxBatchSize: 100,
         batchScheduleFn: batchDelay

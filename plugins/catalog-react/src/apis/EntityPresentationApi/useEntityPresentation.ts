@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Entity, stringifyEntityRef } from '@backstage/catalog-model';
+import { Entity } from '@backstage/catalog-model';
 import { useApi } from '@backstage/core-plugin-api';
 import { useMemo } from 'react';
 import useObservable from 'react-use/lib/useObservable';
@@ -27,11 +27,14 @@ import {
  * Returns information about how to represent an entity in the interface.
  *
  * @public
- * @param entity The entity to represent
+ * @param entityOrRef The entity to represent, or a string ref to it. If you
+ *   pass in an entity, it is assumed that it is not a partial one - i.e. only
+ *   pass in an entity if you know that it was fetched in such a way that it
+ *   contains all of the fields that the representation renderer needs.
  * @returns A snapshot of the entity presentation, which may change over time
  */
 export function useEntityPresentation(
-  entity: Entity | string,
+  entityOrRef: Entity | string,
   context?: {
     variant?: string;
     defaultKind?: string;
@@ -40,13 +43,10 @@ export function useEntityPresentation(
 ): EntityRefPresentationSnapshot {
   const entityPresentationApi = useApi(entityPresentationApiRef);
 
-  const entityRef =
-    typeof entity === 'string' ? entity : stringifyEntityRef(entity);
-
   const presentation = useMemo(
-    () => entityPresentationApi.forEntityRef(entityRef, context),
+    () => entityPresentationApi.forEntity(entityOrRef, context),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [entityPresentationApi, entityRef, JSON.stringify(context || null)],
+    [entityPresentationApi, entityOrRef, JSON.stringify(context || null)],
   );
 
   const snapshot = useObservable(presentation.update$, presentation.snapshot);

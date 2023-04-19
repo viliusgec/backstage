@@ -33,12 +33,14 @@ export const DEFAULT_CACHE_TTL: HumanDuration = { seconds: 30 };
 export const DEFAULT_BATCH_DELAY: HumanDuration = { milliseconds: 50 };
 
 export const DEFAULT_ENTITY_FIELDS: string[] = [
+  'apiVersion',
   'kind',
+  'metadata.uid',
+  'metadata.etag',
   'metadata.name',
   'metadata.namespace',
   'metadata.title',
   'metadata.description',
-  'metadata.etag',
   'spec.type',
   'spec.profile',
 ];
@@ -147,6 +149,6 @@ export const defaultRenderer: DefaultEntityPresentationApiRenderer = {
       { kind, namespace, name },
       { defaultKind },
     );
-  */
+    */
   },
 };

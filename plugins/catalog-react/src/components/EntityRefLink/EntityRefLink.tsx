@@ -67,13 +67,13 @@ export type EntityRefLinkProps = {
 export const EntityRefLink = forwardRef<any, EntityRefLinkProps>(
   (props, ref) => {
     const { entityRef, defaultKind, title, children, ...linkProps } = props;
-    const entityRefString =
-      typeof entityRef === 'string' ? entityRef : stringifyEntityRef(entityRef);
 
     const classes = useStyles();
     const entityRoute = useEntityRoute(props.entityRef);
     const { primaryTitle, secondaryTitle, Icon } = useEntityPresentation(
-      entityRefString,
+      typeof entityRef === 'string' || 'metadata' in entityRef
+        ? entityRef
+        : stringifyEntityRef(entityRef),
       { variant: 'icon' },
     );
 

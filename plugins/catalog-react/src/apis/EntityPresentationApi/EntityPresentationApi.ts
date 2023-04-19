@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { Entity } from '@backstage/catalog-model';
 import {
   ApiRef,
   IconComponent,
@@ -49,18 +50,40 @@ export interface EntityRefPresentationSnapshot {
  * @public
  */
 export interface EntityRefPresentation {
+  /**
+   * The representation that's suitable to use for this entity right now.
+   */
   snapshot: EntityRefPresentationSnapshot;
+  /**
+   * When the representation changes, this observable emits a new snapshot
+   * value.
+   */
   update$: Observable<EntityRefPresentationSnapshot>;
 }
 
 /**
  * An API that decides how to visually represent entities in the interface.
  *
+ * @remarks
+ *
+ * Most consumers will want to use the {@link useEntityPresentation} hook
+ * instead of this interface directly.
+ *
  * @public
  */
 export interface EntityPresentationApi {
-  forEntityRef(
-    entityRef: string,
+  /**
+   * Fetches the presentation for an entity.
+   *
+   * @param entityOrRef Either an entity, or a string ref to it. If you pass in
+   *   an entity, it is assumed that it is not a partial one - i.e. only pass in
+   *   an entity if you know that it was fetched in such a way that it contains
+   *   all of the fields that the representation renderer needs.
+   * @param context Contextual information that may affect the rendering of the
+   *   entity.
+   */
+  forEntity(
+    entityOrRef: Entity | string,
     context?: {
       variant?: string;
       defaultKind?: string;
