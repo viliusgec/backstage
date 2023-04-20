@@ -262,7 +262,7 @@ export class DefaultEntityPresentationApi implements EntityPresentationApi {
           })
           .finally(() => {
             if (!aborted) {
-              subscriber.complete();
+              // subscriber.complete();
             }
           });
 
@@ -320,9 +320,10 @@ export class DefaultEntityPresentationApi implements EntityPresentationApi {
           fields: [...entityFields],
         });
 
+        const now = Date.now();
         entityRefs.forEach((entityRef, index) => {
           this.#cache.set(entityRef, {
-            updatedAt: Date.now(),
+            updatedAt: now,
             entity: items[index],
           });
         });

@@ -7,10 +7,15 @@
 
 import { ApiHolder } from '@backstage/core-plugin-api';
 import { BackstagePlugin } from '@backstage/core-plugin-api';
+import { CatalogApi } from '@backstage/plugin-catalog-react';
 import { ComponentEntity } from '@backstage/catalog-model';
 import { CompoundEntityRef } from '@backstage/catalog-model';
 import { Entity } from '@backstage/catalog-model';
+import { EntityPresentationApi } from '@backstage/plugin-catalog-react';
+import { EntityRefPresentation } from '@backstage/plugin-catalog-react';
+import { EntityRefPresentationSnapshot } from '@backstage/plugin-catalog-react';
 import { ExternalRouteRef } from '@backstage/core-plugin-api';
+import { HumanDuration } from '@backstage/types';
 import { IconComponent } from '@backstage/core-plugin-api';
 import { IndexableDocument } from '@backstage/plugin-search-common';
 import { InfoCardVariants } from '@backstage/core-components';
@@ -209,6 +214,46 @@ export interface DefaultCatalogPageProps {
   initiallySelectedFilter?: UserListFilterKind;
   // (undocumented)
   tableOptions?: TableProps<CatalogTableRow>['options'];
+}
+
+// @public
+export class DefaultEntityPresentationApi implements EntityPresentationApi {
+  constructor(options: DefaultEntityPresentationApiOptions);
+  // (undocumented)
+  forEntity(
+    entityOrRef: Entity | string,
+    context?: {
+      variant?: string;
+      defaultKind?: string;
+      defaultNamespace?: string;
+    },
+  ): EntityRefPresentation;
+}
+
+// @public
+export interface DefaultEntityPresentationApiOptions {
+  batchDelay?: HumanDuration;
+  cacheTtl?: HumanDuration;
+  catalogApi: CatalogApi;
+  renderer?: DefaultEntityPresentationApiRenderer;
+}
+
+// @public
+export interface DefaultEntityPresentationApiRenderer {
+  async?: boolean;
+  extraFields?: string[];
+  render: (options: {
+    entityRef: string;
+    loading: boolean;
+    entity: Entity | undefined;
+    context: {
+      variant?: string;
+      defaultKind?: string;
+      defaultNamespace?: string;
+    };
+  }) => {
+    snapshot: Omit<EntityRefPresentationSnapshot, 'entityRef' | 'entity'>;
+  };
 }
 
 // @public

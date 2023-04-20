@@ -19,7 +19,6 @@ import {
   DEFAULT_NAMESPACE,
   Entity,
   parseEntityRef,
-  stringifyEntityRef,
 } from '@backstage/catalog-model';
 import { Link, LinkProps } from '@backstage/core-components';
 import { useRouteRef } from '@backstage/core-plugin-api';
