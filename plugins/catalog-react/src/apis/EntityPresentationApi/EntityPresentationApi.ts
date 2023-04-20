@@ -39,6 +39,7 @@ export const entityPresentationApiRef: ApiRef<EntityPresentationApi> =
  */
 export interface EntityRefPresentationSnapshot {
   entityRef: string;
+  entity?: Entity | undefined;
   primaryTitle: string;
   secondaryTitle?: string;
   Icon?: IconComponent | undefined;
@@ -75,12 +76,12 @@ export interface EntityPresentationApi {
   /**
    * Fetches the presentation for an entity.
    *
-   * @param entityOrRef Either an entity, or a string ref to it. If you pass in
-   *   an entity, it is assumed that it is not a partial one - i.e. only pass in
-   *   an entity if you know that it was fetched in such a way that it contains
-   *   all of the fields that the representation renderer needs.
-   * @param context Contextual information that may affect the rendering of the
-   *   entity.
+   * @param entityOrRef - Either an entity, or a string ref to it. If you pass
+   *   in an entity, it is assumed that it is not a partial one - i.e. only pass
+   *   in an entity if you know that it was fetched in such a way that it
+   *   contains all of the fields that the representation renderer needs.
+   * @param context - Contextual information that may affect the rendering of
+   *   the entity.
    */
   forEntity(
     entityOrRef: Entity | string,

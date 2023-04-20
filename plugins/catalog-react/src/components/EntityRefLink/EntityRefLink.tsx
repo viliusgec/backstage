@@ -70,11 +70,10 @@ export const EntityRefLink = forwardRef<any, EntityRefLinkProps>(
 
     const classes = useStyles();
     const entityRoute = useEntityRoute(props.entityRef);
+
     const { primaryTitle, secondaryTitle, Icon } = useEntityPresentation(
-      typeof entityRef === 'string' || 'metadata' in entityRef
-        ? entityRef
-        : stringifyEntityRef(entityRef),
-      { variant: 'icon' },
+      entityRef,
+      { variant: 'icon', defaultKind },
     );
 
     // The innermost "body" content

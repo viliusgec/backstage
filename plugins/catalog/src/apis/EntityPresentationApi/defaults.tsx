@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { DEFAULT_NAMESPACE, parseEntityRef } from '@backstage/catalog-model';
 import { IconComponent } from '@backstage/core-plugin-api';
 import { HumanDuration } from '@backstage/types';
 import ApartmentIcon from '@material-ui/icons/Apartment';
@@ -61,35 +62,38 @@ export const DEFAULT_ICONS: Record<string, IconComponent> = {
 export const defaultRenderer: DefaultEntityPresentationApiRenderer = {
   async: true,
 
-  render: ({
-    entityRef,
-    loading,
-    entity,
-    context: { variant /* defaultKind, defaultNamespace */ },
-  }) => {
-    const kindLower = entityRef.split(':')[0].toLocaleLowerCase('en-US');
+  render: ({ entityRef, entity, context }) => {
+    const compound = parseEntityRef(entityRef);
 
     const Icon: IconComponent | undefined =
-      variant === 'icon'
-        ? DEFAULT_ICONS[kindLower] ?? UNKNOWN_KIND_ICON
+      context.variant === 'icon'
+        ? DEFAULT_ICONS[compound.kind.toLocaleLowerCase('en-US')] ??
+          UNKNOWN_KIND_ICON
         : undefined;
 
     if (!entity) {
-      if (loading) {
-        return {
-          snapshot: {
-            entityRef: entityRef,
-            primaryTitle: entityRef,
-            Icon,
-          },
-          loadEntity: true,
-        };
+      let result = compound.name;
+
+      const expectedNamespace = context.defaultNamespace ?? DEFAULT_NAMESPACE;
+      if (
+        compound.namespace.toLocaleLowerCase('en-US') !==
+        expectedNamespace.toLocaleLowerCase('en-US')
+      ) {
+        result = `${compound.namespace}/${result}`;
+      }
+
+      const expectedKind = context.defaultKind;
+      if (
+        compound.kind.toLocaleLowerCase('en-US') !==
+        expectedKind?.toLocaleLowerCase('en-US')
+      ) {
+        result = `${compound.kind}:${result}`;
       }
 
       return {
         snapshot: {
-          entityRef: entityRef,
-          primaryTitle: entityRef,
+          primaryTitle: result,
+          secondaryTitle: entityRef,
           Icon,
         },
         loadEntity: true,
@@ -105,7 +109,6 @@ export const defaultRenderer: DefaultEntityPresentationApiRenderer = {
 
     const secondary = [
       primary !== entityRef ? entityRef : undefined,
-      get(entity, 'kind'),
       get(entity, 'spec.type'),
       get(entity, 'metadata.description'),
     ]
@@ -114,41 +117,11 @@ export const defaultRenderer: DefaultEntityPresentationApiRenderer = {
 
     return {
       snapshot: {
-        entityRef: entityRef,
         primaryTitle: primary,
         secondaryTitle: secondary || undefined,
         Icon,
       },
       loadEntity: true,
     };
-
-    /*
-    let kind;
-    let namespace;
-    let name;
-
-    if (typeof entityRef === 'string') {
-      const parsed = parseEntityRef(entityRef);
-      kind = parsed.kind;
-      namespace = parsed.namespace;
-      name = parsed.name;
-    } else if ('metadata' in entityRef) {
-      kind = entityRef.kind;
-      namespace = entityRef.metadata.namespace;
-      name = entityRef.metadata.name;
-    } else {
-      kind = entityRef.kind;
-      namespace = entityRef.namespace;
-      name = entityRef.name;
-    }
-
-    kind = kind.toLocaleLowerCase('en-US');
-    namespace = namespace?.toLocaleLowerCase('en-US') ?? DEFAULT_NAMESPACE;
-
-    const formattedEntityRefTitle = humanizeEntityRef(
-      { kind, namespace, name },
-      { defaultKind },
-    );
-    */
   },
 };

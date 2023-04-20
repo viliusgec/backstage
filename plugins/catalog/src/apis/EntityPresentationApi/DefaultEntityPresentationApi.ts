@@ -77,6 +77,23 @@ export interface DefaultEntityPresentationApiRenderer {
 
   /**
    * The actual render function.
+   *
+   * @remarks
+   *
+   * This function may be called multiple times.
+   *
+   * The loading flag signals that the framework MAY be trying to load more
+   * entity data from the catalog and call the render function again, if it
+   * succeeds. In some cases you may want to render a loading state in that
+   * case.
+   *
+   * The entity may or may not be given. If the caller of the presentation API
+   * did present an entity upfront, then that's what will be passed in here.
+   * Otherwise, it may be a server-side entity that either comes from a local
+   * cache or directly from the server.
+   *
+   * In either case, the renderer should return a presentation that is the most
+   * useful possible for the end user, given the data that is available.
    */
   render: (options: {
     entityRef: string;
@@ -88,7 +105,7 @@ export interface DefaultEntityPresentationApiRenderer {
       defaultNamespace?: string;
     };
   }) => {
-    snapshot: EntityRefPresentationSnapshot;
+    snapshot: Omit<EntityRefPresentationSnapshot, 'entityRef' | 'entity'>;
   };
 }
 
@@ -180,32 +197,39 @@ export class DefaultEntityPresentationApi implements EntityPresentationApi {
     const { entityRef, entity, needsLoad } =
       this.#getEntityForInitialRender(entityOrRef);
 
-    let snapshot: EntityRefPresentationSnapshot;
+    let rendered: Omit<EntityRefPresentationSnapshot, 'entityRef' | 'entity'>;
     try {
-      const rendered = this.#renderer.render({
+      const output = this.#renderer.render({
         entityRef: entityRef,
         loading: needsLoad,
         entity: entity,
         context: context || {},
       });
-      snapshot = rendered.snapshot;
+      rendered = output.snapshot;
     } catch {
       // This is what gets presented if the renderer throws an error
-      snapshot = {
-        entityRef: entityRef,
+      rendered = {
         primaryTitle: entityRef,
       };
     }
 
     if (!needsLoad) {
       return {
-        snapshot,
+        snapshot: {
+          ...rendered,
+          entityRef: entityRef,
+          entity: entity,
+        },
         update$: DefaultEntityPresentationApi.#dummyObserver,
       };
     }
 
     return {
-      snapshot,
+      snapshot: {
+        ...rendered,
+        entityRef: entityRef,
+        entity: entity,
+      },
       update$: new ObservableImpl(subscriber => {
         let aborted = false;
 
@@ -217,20 +241,24 @@ export class DefaultEntityPresentationApi implements EntityPresentationApi {
               newEntity &&
               newEntity.metadata.etag !== entity?.metadata.etag
             ) {
-              const rendered = this.#renderer.render({
+              const output = this.#renderer.render({
                 entityRef: entityRef,
                 loading: false,
                 entity: newEntity,
                 context: context || {},
               });
-              subscriber.next(rendered.snapshot);
+              subscriber.next({
+                ...output.snapshot,
+                entityRef: entityRef,
+                entity: newEntity,
+              });
             }
           })
           .catch(() => {
-            // We do not propagate errors to the observable here. The
-            // presentation API should be error free and always return SOMETHING
-            // that makes sense to render, and we have already ensured that the
-            // initial snapshot was that.
+            // Intentionally ignored - we do not propagate errors to the
+            // observable here. The presentation API should be error free and
+            // always return SOMETHING that makes sense to render, and we have
+            // already ensured above that the initial snapshot was that.
           })
           .finally(() => {
             if (!aborted) {
