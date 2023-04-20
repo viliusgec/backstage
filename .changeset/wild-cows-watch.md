@@ -1,5 +1,5 @@
 ---
-'@backstage/plugin-catalog': patch
+'@backstage/plugin-catalog': minor
 ---
 
 Added the `DefaultEntityPresentationApi`, which is an implementation of the
