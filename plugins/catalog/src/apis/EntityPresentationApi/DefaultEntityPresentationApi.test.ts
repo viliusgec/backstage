@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { CatalogApi } from '@backstage/catalog-client';
 import { Entity } from '@backstage/catalog-model';
 import { DefaultEntityPresentationApi } from './DefaultEntityPresentationApi';
 
@@ -29,7 +30,7 @@ describe('DefaultEntityPresentationApi', () => {
         secondaryTitle: 'component:default/test',
         Icon: undefined,
       },
-      update$: expect.anything(),
+      update$: undefined,
     });
 
     expect(
@@ -42,7 +43,7 @@ describe('DefaultEntityPresentationApi', () => {
         secondaryTitle: 'component:default/test',
         Icon: undefined,
       },
-      update$: expect.anything(),
+      update$: undefined,
     });
 
     expect(
@@ -57,7 +58,7 @@ describe('DefaultEntityPresentationApi', () => {
         secondaryTitle: 'component:default/test',
         Icon: undefined,
       },
-      update$: expect.anything(),
+      update$: undefined,
     });
 
     const entity: Entity = {
@@ -80,7 +81,18 @@ describe('DefaultEntityPresentationApi', () => {
         secondaryTitle: 'component:default/test | service',
         Icon: undefined,
       },
-      update$: expect.anything(),
+      update$: undefined,
     });
+  });
+
+  it('works in catalog mode', async () => {
+    const catalogApi = {
+      getEntitiesByRefs: jest.fn(),
+    };
+    const api = DefaultEntityPresentationApi.create({
+      catalogApi: catalogApi as Partial<CatalogApi> as any,
+    });
+
+    expect(api).toBeTruthy();
   });
 });

@@ -21,7 +21,7 @@ import {
   EntityRefPresentation,
   EntityRefPresentationSnapshot,
 } from '@backstage/plugin-catalog-react';
-import { HumanDuration, Observable } from '@backstage/types';
+import { HumanDuration } from '@backstage/types';
 import DataLoader from 'dataloader';
 import ExpiryMap from 'expiry-map';
 import uniq from 'lodash/uniq';
@@ -159,12 +159,6 @@ interface CacheEntry {
  * @public
  */
 export class DefaultEntityPresentationApi implements EntityPresentationApi {
-  // Just to not have to recreate a do-nothing observer over and over
-  static readonly #dummyObserver: Observable<EntityRefPresentationSnapshot> =
-    new ObservableImpl(subscriber => {
-      subscriber.complete();
-    });
-
   /**
    * Creates a new presentation API that does not reach out to the catalog.
    */
@@ -230,16 +224,48 @@ export class DefaultEntityPresentationApi implements EntityPresentationApi {
       };
     }
 
-    if (!needsLoad) {
-      return {
-        snapshot: {
-          ...rendered,
-          entityRef: entityRef,
-          entity: entity,
-        },
-        update$: DefaultEntityPresentationApi.#dummyObserver,
-      };
-    }
+    const observable = !needsLoad
+      ? undefined
+      : new ObservableImpl<EntityRefPresentationSnapshot>(subscriber => {
+          let aborted = false;
+
+          Promise.resolve()
+            .then(() => this.#loader.load(entityRef))
+            .then(newEntity => {
+              if (
+                !aborted &&
+                newEntity &&
+                newEntity.metadata.etag !== entity?.metadata.etag
+              ) {
+                const output = this.#renderer.render({
+                  entityRef: entityRef,
+                  loading: false,
+                  entity: newEntity,
+                  context: context || {},
+                });
+                subscriber.next({
+                  ...output.snapshot,
+                  entityRef: entityRef,
+                  entity: newEntity,
+                });
+              }
+            })
+            .catch(() => {
+              // Intentionally ignored - we do not propagate errors to the
+              // observable here. The presentation API should be error free and
+              // always return SOMETHING that makes sense to render, and we have
+              // already ensured above that the initial snapshot was that.
+            })
+            .finally(() => {
+              if (!aborted) {
+                subscriber.complete();
+              }
+            });
+
+          return () => {
+            aborted = true;
+          };
+        });
 
     return {
       snapshot: {
@@ -247,46 +273,7 @@ export class DefaultEntityPresentationApi implements EntityPresentationApi {
         entityRef: entityRef,
         entity: entity,
       },
-      update$: new ObservableImpl(subscriber => {
-        let aborted = false;
-
-        Promise.resolve()
-          .then(() => this.#loader.load(entityRef))
-          .then(newEntity => {
-            if (
-              !aborted &&
-              newEntity &&
-              newEntity.metadata.etag !== entity?.metadata.etag
-            ) {
-              const output = this.#renderer.render({
-                entityRef: entityRef,
-                loading: false,
-                entity: newEntity,
-                context: context || {},
-              });
-              subscriber.next({
-                ...output.snapshot,
-                entityRef: entityRef,
-                entity: newEntity,
-              });
-            }
-          })
-          .catch(() => {
-            // Intentionally ignored - we do not propagate errors to the
-            // observable here. The presentation API should be error free and
-            // always return SOMETHING that makes sense to render, and we have
-            // already ensured above that the initial snapshot was that.
-          })
-          .finally(() => {
-            if (!aborted) {
-              // subscriber.complete();
-            }
-          });
-
-        return () => {
-          aborted = true;
-        };
-      }),
+      update$: observable,
     };
   }
 

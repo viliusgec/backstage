@@ -91,7 +91,7 @@ function fallbackPresentation(
 // properly react when either initial value or the actual observable changes.
 function useUpdatingObservable<T>(
   value: T,
-  observable: Observable<T>,
+  observable: Observable<T> | undefined,
   deps: DependencyList,
 ): T {
   const snapshot = useRef(value);
@@ -101,26 +101,18 @@ function useUpdatingObservable<T>(
     snapshot.current = value;
     setCounter(counter => counter + 1);
 
-    let unsubscribed = false;
-
-    const subscription = observable.subscribe({
+    const subscription = observable?.subscribe({
       next: updatedValue => {
         snapshot.current = updatedValue;
         setCounter(counter => counter + 1);
       },
       complete: () => {
-        if (!unsubscribed) {
-          subscription.unsubscribe();
-          unsubscribed = true;
-        }
+        subscription?.unsubscribe();
       },
     });
 
     return () => {
-      if (!unsubscribed) {
-        subscription.unsubscribe();
-        unsubscribed = true;
-      }
+      subscription?.unsubscribe();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
@@ -136,6 +128,7 @@ function useUpdatingObservable<T>(
  *   pass in an entity, it is assumed that it is not a partial one - i.e. only
  *   pass in an entity if you know that it was fetched in such a way that it
  *   contains all of the fields that the representation renderer needs.
+ * @param context - Optional context that control details of the presentation.
  * @returns A snapshot of the entity presentation, which may change over time
  */
 export function useEntityPresentation(

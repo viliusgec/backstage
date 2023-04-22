@@ -91,7 +91,7 @@ export type CatalogReactEntityOwnerPickerClassKey = 'input';
 export type CatalogReactEntityProcessingStatusPickerClassKey = 'input';
 
 // @public
-export type CatalogReactEntityRefClassKey = 'icon';
+export type CatalogReactEntityRefClassKey = 'root' | 'icon';
 
 // @public (undocumented)
 export type CatalogReactEntitySearchBarClassKey = 'searchToolbar' | 'input';
@@ -345,7 +345,7 @@ export type EntityRefLinksProps<
 // @public
 export interface EntityRefPresentation {
   snapshot: EntityRefPresentationSnapshot;
-  update$: Observable<EntityRefPresentationSnapshot>;
+  update$?: Observable<EntityRefPresentationSnapshot>;
 }
 
 // @public

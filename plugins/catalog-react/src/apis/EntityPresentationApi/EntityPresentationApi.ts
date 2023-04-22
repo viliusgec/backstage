@@ -56,10 +56,11 @@ export interface EntityRefPresentation {
    */
   snapshot: EntityRefPresentationSnapshot;
   /**
-   * When the representation changes, this observable emits a new snapshot
-   * value.
+   * Some presentation implementations support emitting updated snapshots over
+   * time, for example after retrieving additional data from the catalog or
+   * elsewhere.
    */
-  update$: Observable<EntityRefPresentationSnapshot>;
+  update$?: Observable<EntityRefPresentationSnapshot>;
 }
 
 /**
