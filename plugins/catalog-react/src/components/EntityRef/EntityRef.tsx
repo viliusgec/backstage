@@ -25,11 +25,11 @@ import { useEntityPresentation } from '../../apis';
  *
  * @public
  */
-export type CatalogReactEntityRefClassKey = 'icon';
+export type CatalogReactEntityRefClassKey = 'root' | 'icon';
 
 const useStyles = makeStyles(
   (theme: Theme) => ({
-    iconContainer: {
+    root: {
       display: 'inline-flex',
       alignItems: 'center',
     },
@@ -73,7 +73,7 @@ export const EntityRef = (props: EntityRefProps): JSX.Element => {
   // Optionally, an icon and wrapper around them both
   if (Icon) {
     content = (
-      <Box component="span" className={classes.iconContainer}>
+      <Box component="span" className={classes.root}>
         {content}
         <Box component="span" className={classes.icon}>
           <Icon fontSize="inherit" />

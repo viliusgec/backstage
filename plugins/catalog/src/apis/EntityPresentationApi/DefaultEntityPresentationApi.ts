@@ -21,14 +21,11 @@ import {
   EntityRefPresentation,
   EntityRefPresentationSnapshot,
 } from '@backstage/plugin-catalog-react';
-import { HumanDuration } from '@backstage/types';
+import { HumanDuration, Observable } from '@backstage/types';
 import DataLoader from 'dataloader';
 import ExpiryMap from 'expiry-map';
 import uniq from 'lodash/uniq';
-import {
-  default as Observable,
-  default as ObservableImpl,
-} from 'zen-observable';
+import ObservableImpl from 'zen-observable';
 import {
   DEFAULT_BATCH_DELAY,
   DEFAULT_CACHE_TTL,

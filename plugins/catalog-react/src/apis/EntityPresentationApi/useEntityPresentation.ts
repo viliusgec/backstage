@@ -16,16 +16,117 @@
 
 import {
   CompoundEntityRef,
+  DEFAULT_NAMESPACE,
   Entity,
+  getCompoundEntityRef,
+  parseEntityRef,
   stringifyEntityRef,
 } from '@backstage/catalog-model';
-import { useApi } from '@backstage/core-plugin-api';
-import { useMemo } from 'react';
-import useObservable from 'react-use/lib/useObservable';
+import { useApiHolder } from '@backstage/core-plugin-api';
+import { Observable } from '@backstage/types';
+import { DependencyList, useEffect, useMemo, useRef, useState } from 'react';
+import ObservableImpl from 'zen-observable';
 import {
+  EntityRefPresentation,
   EntityRefPresentationSnapshot,
   entityPresentationApiRef,
 } from './EntityPresentationApi';
+
+// Just to not have to recreate a do-nothing observer over and over
+const dummyObserver = new ObservableImpl<EntityRefPresentationSnapshot>(
+  subscriber => {
+    subscriber.complete();
+  },
+);
+
+function fallbackPresentation(
+  entityOrRef: Entity | CompoundEntityRef | string,
+  context?: {
+    variant?: string;
+    defaultKind?: string;
+    defaultNamespace?: string;
+  },
+): EntityRefPresentation {
+  const entityRef =
+    typeof entityOrRef === 'string'
+      ? entityOrRef
+      : stringifyEntityRef(entityOrRef);
+
+  const compound =
+    typeof entityOrRef === 'object' && 'metadata' in entityOrRef
+      ? getCompoundEntityRef(entityOrRef)
+      : parseEntityRef(entityOrRef);
+
+  let result = compound.name;
+
+  const expectedNamespace = context?.defaultNamespace ?? DEFAULT_NAMESPACE;
+  if (
+    compound.namespace.toLocaleLowerCase('en-US') !==
+    expectedNamespace.toLocaleLowerCase('en-US')
+  ) {
+    result = `${compound.namespace}/${result}`;
+  }
+
+  if (context?.defaultKind) {
+    if (
+      compound.kind.toLocaleLowerCase('en-US') !==
+      context.defaultKind.toLocaleLowerCase('en-US')
+    ) {
+      result = `${compound.kind}:${result}`;
+    }
+  }
+
+  return {
+    snapshot: {
+      entityRef: entityRef,
+      primaryTitle: result,
+    },
+    update$: dummyObserver,
+  };
+}
+
+// NOTE(freben): We intentionally do not use the plain useObservable from the
+// react-use library here. That hook does not support a dependencies array, and
+// also it only subscribes once to the initially passed in observable and won't
+// properly react when either initial value or the actual observable changes.
+function useUpdatingObservable<T>(
+  value: T,
+  observable: Observable<T>,
+  deps: DependencyList,
+): T {
+  const snapshot = useRef(value);
+  const [, setCounter] = useState(0);
+
+  useEffect(() => {
+    snapshot.current = value;
+    setCounter(counter => counter + 1);
+
+    let unsubscribed = false;
+
+    const subscription = observable.subscribe({
+      next: updatedValue => {
+        snapshot.current = updatedValue;
+        setCounter(counter => counter + 1);
+      },
+      complete: () => {
+        if (!unsubscribed) {
+          subscription.unsubscribe();
+          unsubscribed = true;
+        }
+      },
+    });
+
+    return () => {
+      if (!unsubscribed) {
+        subscription.unsubscribe();
+        unsubscribed = true;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
+
+  return snapshot.current;
+}
 
 /**
  * Returns information about how to represent an entity in the interface.
@@ -45,21 +146,35 @@ export function useEntityPresentation(
     defaultNamespace?: string;
   },
 ): EntityRefPresentationSnapshot {
-  const entityPresentationApi = useApi(entityPresentationApiRef);
+  // Defensively allow for a missing presentation API, which makes this hook
+  // safe to use in tests.
+  const apis = useApiHolder();
+  const entityPresentationApi = apis.get(entityPresentationApiRef);
 
-  const presentation = useMemo(
-    () =>
-      entityPresentationApi.forEntity(
+  const deps = [
+    entityPresentationApi,
+    JSON.stringify(entityOrRef),
+    JSON.stringify(context || null),
+  ];
+
+  const presentation = useMemo<EntityRefPresentation>(
+    () => {
+      if (!entityPresentationApi) {
+        return fallbackPresentation(entityOrRef, context);
+      }
+
+      return entityPresentationApi.forEntity(
         typeof entityOrRef === 'string' || 'metadata' in entityOrRef
           ? entityOrRef
           : stringifyEntityRef(entityOrRef),
         context,
-      ),
+      );
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [entityPresentationApi, entityOrRef, JSON.stringify(context || null)],
+    deps,
   );
 
-  const snapshot = useObservable(presentation.update$, presentation.snapshot);
-
-  return snapshot;
+  return useUpdatingObservable(presentation.snapshot, presentation.update$, [
+    presentation,
+  ]);
 }
