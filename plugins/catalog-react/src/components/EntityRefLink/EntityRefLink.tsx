@@ -22,28 +22,9 @@ import {
 } from '@backstage/catalog-model';
 import { Link, LinkProps } from '@backstage/core-components';
 import { useRouteRef } from '@backstage/core-plugin-api';
-import { Box, Theme, Tooltip, makeStyles } from '@material-ui/core';
 import React, { forwardRef } from 'react';
-import { useEntityPresentation } from '../../apis';
 import { entityRouteRef } from '../../routes';
-
-/** @public */
-export type CatalogReactEntityRefLinkClassKey = 'icon';
-
-const useStyles = makeStyles(
-  (theme: Theme) => ({
-    iconContainer: {
-      display: 'inline-flex',
-      alignItems: 'center',
-    },
-    icon: {
-      marginLeft: theme.spacing(0.5),
-      color: theme.palette.text.secondary,
-      lineHeight: 0,
-    },
-  }),
-  { name: 'CatalogReactEntityRefLink' },
-);
+import { EntityRef } from '../EntityRef/EntityRef';
 
 /**
  * Props for {@link EntityRefLink}.
@@ -53,7 +34,7 @@ const useStyles = makeStyles(
 export type EntityRefLinkProps = {
   entityRef: Entity | CompoundEntityRef | string;
   defaultKind?: string;
-  /** @deprecated This option is no longer used; presentation is handled by entityPresentationApiRef instead */
+  /** @deprecated This option is no longer used; presentation is requested through the {@link entityPresentationApiRef} instead */
   title?: string;
   children?: React.ReactNode;
 } & Omit<LinkProps, 'to'>;
@@ -66,47 +47,16 @@ export type EntityRefLinkProps = {
 export const EntityRefLink = forwardRef<any, EntityRefLinkProps>(
   (props, ref) => {
     const { entityRef, defaultKind, title, children, ...linkProps } = props;
-
-    const classes = useStyles();
     const entityRoute = useEntityRoute(props.entityRef);
 
-    const { primaryTitle, secondaryTitle, Icon } = useEntityPresentation(
-      entityRef,
-      { variant: 'icon', defaultKind },
+    const content = children ?? (
+      <EntityRef entityRef={entityRef} defaultKind={defaultKind} />
     );
-
-    // The innermost "body" content
-    let content = <>{primaryTitle}</>;
-
-    // The link that wraps it
-    content = (
+    return (
       <Link {...linkProps} ref={ref} to={entityRoute}>
         {content}
       </Link>
     );
-
-    // Optionally, an icon and wrapper around them both
-    if (Icon) {
-      content = (
-        <Box component="span" className={classes.iconContainer}>
-          {content}
-          <Box component="span" className={classes.icon}>
-            <Icon fontSize="inherit" />
-          </Box>
-        </Box>
-      );
-    }
-
-    // Optionally, a tooltip as the outermost layer
-    if (secondaryTitle) {
-      content = (
-        <Tooltip enterDelay={1500} title={secondaryTitle}>
-          {content}
-        </Tooltip>
-      );
-    }
-
-    return content;
   },
 ) as (props: EntityRefLinkProps) => JSX.Element;
 

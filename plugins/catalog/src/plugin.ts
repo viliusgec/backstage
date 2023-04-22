@@ -75,7 +75,7 @@ export const catalogPlugin = createPlugin({
       api: entityPresentationApiRef,
       deps: { catalogApi: catalogApiRef },
       factory: ({ catalogApi }) =>
-        new DefaultEntityPresentationApi({ catalogApi }),
+        DefaultEntityPresentationApi.create({ catalogApi }),
     }),
   ],
   routes: {

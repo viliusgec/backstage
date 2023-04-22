@@ -33,7 +33,7 @@ import {
   DEFAULT_BATCH_DELAY,
   DEFAULT_CACHE_TTL,
   DEFAULT_ENTITY_FIELDS,
-  defaultRenderer,
+  createDefaultRenderer,
 } from './defaults';
 import { durationToMs } from './util';
 
@@ -168,6 +168,26 @@ export class DefaultEntityPresentationApi implements EntityPresentationApi {
       subscriber.complete();
     });
 
+  /**
+   * Creates a new presentation API that does not reach out to the catalog.
+   */
+  static createLocal(): EntityPresentationApi {
+    return new DefaultEntityPresentationApi({
+      catalogApi: {} as any,
+      renderer: createDefaultRenderer({ async: false }),
+    });
+  }
+
+  /**
+   * Creates a new presentation API that calls out to the catalog as needed to
+   * get additional information about entities.
+   */
+  static create(
+    options: DefaultEntityPresentationApiOptions,
+  ): EntityPresentationApi {
+    return new DefaultEntityPresentationApi(options);
+  }
+
   // This cache holds on to all entity data ever loaded, no matter how old. Each
   // entry is tagged with a timestamp of when it was inserted. We use this map
   // to be able to always render SOME data even though the information is old.
@@ -178,11 +198,11 @@ export class DefaultEntityPresentationApi implements EntityPresentationApi {
   readonly #loader: DataLoader<string, Entity | undefined>;
   readonly #renderer: DefaultEntityPresentationApiRenderer;
 
-  constructor(options: DefaultEntityPresentationApiOptions) {
+  private constructor(options: DefaultEntityPresentationApiOptions) {
     this.#cacheTtlMs = durationToMs(options.cacheTtl ?? DEFAULT_CACHE_TTL);
     this.#cache = new Map();
     this.#loader = this.#createLoader(options);
-    this.#renderer = options.renderer ?? defaultRenderer;
+    this.#renderer = options.renderer ?? createDefaultRenderer({ async: true });
   }
 
   /** {@inheritdoc @backstage/plugin-catalog-react#EntityPresentationApi.forEntity} */

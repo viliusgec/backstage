@@ -218,7 +218,10 @@ export interface DefaultCatalogPageProps {
 
 // @public
 export class DefaultEntityPresentationApi implements EntityPresentationApi {
-  constructor(options: DefaultEntityPresentationApiOptions);
+  static create(
+    options: DefaultEntityPresentationApiOptions,
+  ): EntityPresentationApi;
+  static createLocal(): EntityPresentationApi;
   // (undocumented)
   forEntity(
     entityOrRef: Entity | string,

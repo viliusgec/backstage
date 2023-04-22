@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 The Backstage Authors
+ * Copyright 2023 The Backstage Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-export { EntityRefLink } from './EntityRefLink';
-export type { EntityRefLinkProps } from './EntityRefLink';
-export { EntityRefLinks } from './EntityRefLinks';
-export type { EntityRefLinksProps } from './EntityRefLinks';
-export { humanizeEntityRef } from './humanize';
+export {
+  EntityRef,
+  type CatalogReactEntityRefClassKey,
+  type EntityRefProps,
+} from './EntityRef';

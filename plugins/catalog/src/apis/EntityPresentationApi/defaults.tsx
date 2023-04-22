@@ -59,69 +59,75 @@ export const DEFAULT_ICONS: Record<string, IconComponent> = {
   template: LibraryAddIcon,
 };
 
-export const defaultRenderer: DefaultEntityPresentationApiRenderer = {
-  async: true,
+export function createDefaultRenderer(options: {
+  async: boolean;
+}): DefaultEntityPresentationApiRenderer {
+  return {
+    async: options.async,
 
-  render: ({ entityRef, entity, context }) => {
-    const compound = parseEntityRef(entityRef);
+    render: ({ entityRef, entity, context }) => {
+      const compound = parseEntityRef(entityRef);
 
-    const Icon: IconComponent | undefined =
-      context.variant === 'icon'
-        ? DEFAULT_ICONS[compound.kind.toLocaleLowerCase('en-US')] ??
-          UNKNOWN_KIND_ICON
-        : undefined;
+      const Icon: IconComponent | undefined =
+        context.variant === 'icon'
+          ? DEFAULT_ICONS[compound.kind.toLocaleLowerCase('en-US')] ??
+            UNKNOWN_KIND_ICON
+          : undefined;
 
-    if (!entity) {
-      let result = compound.name;
+      if (!entity) {
+        let result = compound.name;
 
-      const expectedNamespace = context.defaultNamespace ?? DEFAULT_NAMESPACE;
-      if (
-        compound.namespace.toLocaleLowerCase('en-US') !==
-        expectedNamespace.toLocaleLowerCase('en-US')
-      ) {
-        result = `${compound.namespace}/${result}`;
+        const expectedNamespace = context.defaultNamespace ?? DEFAULT_NAMESPACE;
+        if (
+          context.defaultNamespace &&
+          compound.namespace.toLocaleLowerCase('en-US') !==
+            expectedNamespace.toLocaleLowerCase('en-US')
+        ) {
+          result = `${compound.namespace}/${result}`;
+        }
+
+        const expectedKind = context.defaultKind;
+        if (
+          context.defaultKind &&
+          compound.kind.toLocaleLowerCase('en-US') !==
+            expectedKind?.toLocaleLowerCase('en-US')
+        ) {
+          result = `${compound.kind}:${result}`;
+        }
+
+        return {
+          snapshot: {
+            primaryTitle: result,
+            secondaryTitle: entityRef,
+            Icon,
+          },
+          loadEntity: true,
+        };
       }
 
-      const expectedKind = context.defaultKind;
-      if (
-        compound.kind.toLocaleLowerCase('en-US') !==
-        expectedKind?.toLocaleLowerCase('en-US')
-      ) {
-        result = `${compound.kind}:${result}`;
-      }
+      const primary = [
+        get(entity, 'spec.profile.displayName'),
+        get(entity, 'metadata.title'),
+        get(entity, 'metadata.name'),
+        entityRef,
+      ].filter(candidate => candidate && typeof candidate === 'string')[0]!;
+
+      const secondary = [
+        primary !== entityRef ? entityRef : undefined,
+        get(entity, 'spec.type'),
+        get(entity, 'metadata.description'),
+      ]
+        .filter(candidate => candidate && typeof candidate === 'string')
+        .join(' | ');
 
       return {
         snapshot: {
-          primaryTitle: result,
-          secondaryTitle: entityRef,
+          primaryTitle: primary,
+          secondaryTitle: secondary || undefined,
           Icon,
         },
         loadEntity: true,
       };
-    }
-
-    const primary = [
-      get(entity, 'spec.profile.displayName'),
-      get(entity, 'metadata.title'),
-      get(entity, 'metadata.name'),
-      entityRef,
-    ].filter(candidate => candidate && typeof candidate === 'string')[0]!;
-
-    const secondary = [
-      primary !== entityRef ? entityRef : undefined,
-      get(entity, 'spec.type'),
-      get(entity, 'metadata.description'),
-    ]
-      .filter(candidate => candidate && typeof candidate === 'string')
-      .join(' | ');
-
-    return {
-      snapshot: {
-        primaryTitle: primary,
-        secondaryTitle: secondary || undefined,
-        Icon,
-      },
-      loadEntity: true,
-    };
-  },
-};
+    },
+  };
+}
