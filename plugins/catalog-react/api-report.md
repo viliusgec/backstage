@@ -71,7 +71,7 @@ export const CatalogFilterLayout: {
 export type CatalogReactComponentsNameToClassKey = {
   CatalogReactUserListPicker: CatalogReactUserListPickerClassKey;
   CatalogReactEntityLifecyclePicker: CatalogReactEntityLifecyclePickerClassKey;
-  CatalogReactEntityRef: CatalogReactEntityRefClassKey;
+  CatalogReactEntityName: CatalogReactEntityNameClassKey;
   CatalogReactEntitySearchBar: CatalogReactEntitySearchBarClassKey;
   CatalogReactEntityTagPicker: CatalogReactEntityTagPickerClassKey;
   CatalogReactEntityOwnerPicker: CatalogReactEntityOwnerPickerClassKey;
@@ -81,6 +81,9 @@ export type CatalogReactComponentsNameToClassKey = {
 // @public (undocumented)
 export type CatalogReactEntityLifecyclePickerClassKey = 'input';
 
+// @public
+export type CatalogReactEntityNameClassKey = 'root' | 'icon';
+
 // @public (undocumented)
 export type CatalogReactEntityNamespacePickerClassKey = 'input';
 
@@ -89,9 +92,6 @@ export type CatalogReactEntityOwnerPickerClassKey = 'input';
 
 // @public (undocumented)
 export type CatalogReactEntityProcessingStatusPickerClassKey = 'input';
-
-// @public
-export type CatalogReactEntityRefClassKey = 'root' | 'icon';
 
 // @public (undocumented)
 export type CatalogReactEntitySearchBarClassKey = 'searchToolbar' | 'input';
@@ -238,6 +238,16 @@ export type EntityLoadingStatus<TEntity extends Entity = Entity> = {
 };
 
 // @public
+export const EntityName: (props: EntityNameProps) => JSX.Element;
+
+// @public
+export type EntityNameProps = {
+  entityRef: Entity | CompoundEntityRef | string;
+  defaultKind?: string;
+  defaultNamespace?: string;
+};
+
+// @public
 export class EntityNamespaceFilter implements EntityFilter {
   constructor(values: string[]);
   // (undocumented)
@@ -314,15 +324,13 @@ export interface EntityProviderProps {
 }
 
 // @public
-export const EntityRef: (props: EntityRefProps) => JSX.Element;
-
-// @public
 export const EntityRefLink: (props: EntityRefLinkProps) => JSX.Element;
 
 // @public
 export type EntityRefLinkProps = {
   entityRef: Entity | CompoundEntityRef | string;
   defaultKind?: string;
+  defaultNamespace?: string;
   title?: string;
   children?: React_2.ReactNode;
 } & Omit<LinkProps, 'to'>;
@@ -361,13 +369,6 @@ export interface EntityRefPresentationSnapshot {
   // (undocumented)
   secondaryTitle?: string;
 }
-
-// @public
-export type EntityRefProps = {
-  entityRef: Entity | CompoundEntityRef | string;
-  defaultKind?: string;
-  defaultNamespace?: string;
-};
 
 // @public
 export function entityRouteParams(entity: Entity): {

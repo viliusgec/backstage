@@ -20,12 +20,12 @@ import React from 'react';
 import { useEntityPresentation } from '../../apis';
 
 /**
- * The available style class keys for {@link EntityRef}, under the name
- * "CatalogReactEntityRef".
+ * The available style class keys for {@link EntityName}, under the name
+ * "CatalogReactEntityName".
  *
  * @public
  */
-export type CatalogReactEntityRefClassKey = 'root' | 'icon';
+export type CatalogReactEntityNameClassKey = 'root' | 'icon';
 
 const useStyles = makeStyles(
   (theme: Theme) => ({
@@ -39,15 +39,15 @@ const useStyles = makeStyles(
       lineHeight: 0,
     },
   }),
-  { name: 'CatalogReactEntityRef' },
+  { name: 'CatalogReactEntityName' },
 );
 
 /**
- * Props for {@link EntityRef}.
+ * Props for {@link EntityName}.
  *
  * @public
  */
-export type EntityRefProps = {
+export type EntityNameProps = {
   entityRef: Entity | CompoundEntityRef | string;
   defaultKind?: string;
   defaultNamespace?: string;
@@ -58,7 +58,7 @@ export type EntityRefProps = {
  *
  * @public
  */
-export const EntityRef = (props: EntityRefProps): JSX.Element => {
+export const EntityName = (props: EntityNameProps): JSX.Element => {
   const { entityRef, defaultKind, defaultNamespace } = props;
 
   const classes = useStyles();
