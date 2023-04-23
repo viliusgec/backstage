@@ -34,6 +34,7 @@ import { EntityRef } from '../EntityRef/EntityRef';
 export type EntityRefLinkProps = {
   entityRef: Entity | CompoundEntityRef | string;
   defaultKind?: string;
+  defaultNamespace?: string;
   /** @deprecated This option is no longer used; presentation is requested through the {@link entityPresentationApiRef} instead */
   title?: string;
   children?: React.ReactNode;
@@ -46,11 +47,22 @@ export type EntityRefLinkProps = {
  */
 export const EntityRefLink = forwardRef<any, EntityRefLinkProps>(
   (props, ref) => {
-    const { entityRef, defaultKind, title, children, ...linkProps } = props;
+    const {
+      entityRef,
+      defaultKind,
+      defaultNamespace,
+      title,
+      children,
+      ...linkProps
+    } = props;
     const entityRoute = useEntityRoute(props.entityRef);
 
     const content = children ?? (
-      <EntityRef entityRef={entityRef} defaultKind={defaultKind} />
+      <EntityRef
+        entityRef={entityRef}
+        defaultKind={defaultKind}
+        defaultNamespace={defaultNamespace}
+      />
     );
     return (
       <Link {...linkProps} ref={ref} to={entityRoute}>

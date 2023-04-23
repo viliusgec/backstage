@@ -16,6 +16,10 @@
 
 import { CatalogApi } from '@backstage/catalog-client';
 import { Entity } from '@backstage/catalog-model';
+import {
+  EntityRefPresentation,
+  EntityRefPresentationSnapshot,
+} from '@backstage/plugin-catalog-react';
 import { DefaultEntityPresentationApi } from './DefaultEntityPresentationApi';
 
 describe('DefaultEntityPresentationApi', () => {
@@ -93,6 +97,108 @@ describe('DefaultEntityPresentationApi', () => {
       catalogApi: catalogApi as Partial<CatalogApi> as any,
     });
 
-    expect(api).toBeTruthy();
+    catalogApi.getEntitiesByRefs.mockResolvedValueOnce({
+      items: [
+        {
+          apiVersion: 'backstage.io/v1alpha1',
+          kind: 'Component',
+          metadata: {
+            name: 'test',
+            namespace: 'default',
+            etag: 'something',
+          },
+          spec: {
+            type: 'service',
+          },
+        },
+      ],
+    });
+
+    // return simple presentation, call catalog, return full presentation
+    await expect(
+      consumePresentation(api.forEntity('component:default/test')),
+    ).resolves.toEqual([
+      {
+        entityRef: 'component:default/test',
+        entity: undefined,
+        primaryTitle: 'test',
+        secondaryTitle: 'component:default/test',
+        Icon: undefined,
+      },
+      {
+        entityRef: 'component:default/test',
+        entity: {
+          apiVersion: 'backstage.io/v1alpha1',
+          kind: 'Component',
+          metadata: {
+            etag: 'something',
+            name: 'test',
+            namespace: 'default',
+          },
+          spec: {
+            type: 'service',
+          },
+        },
+        primaryTitle: 'test',
+        secondaryTitle: 'component:default/test | service',
+        Icon: undefined,
+      },
+    ]);
+
+    // use cached entity, immediately return full presentation
+    await expect(
+      consumePresentation(api.forEntity('component:default/test')),
+    ).resolves.toEqual([
+      {
+        entityRef: 'component:default/test',
+        entity: {
+          apiVersion: 'backstage.io/v1alpha1',
+          kind: 'Component',
+          metadata: {
+            etag: 'something',
+            name: 'test',
+            namespace: 'default',
+          },
+          spec: {
+            type: 'service',
+          },
+        },
+        primaryTitle: 'test',
+        secondaryTitle: 'component:default/test | service',
+        Icon: undefined,
+      },
+    ]);
+
+    expect(catalogApi.getEntitiesByRefs).toHaveBeenCalledTimes(1);
+    expect(catalogApi.getEntitiesByRefs).toHaveBeenCalledWith(
+      expect.objectContaining({
+        entityRefs: ['component:default/test'],
+      }),
+    );
   });
 });
+
+async function consumePresentation(
+  presentation: EntityRefPresentation,
+): Promise<EntityRefPresentationSnapshot[]> {
+  const result: EntityRefPresentationSnapshot[] = [];
+  const { snapshot, update$ } = presentation;
+
+  result.push(snapshot);
+
+  if (update$) {
+    await new Promise<void>(resolve => {
+      const sub = update$.subscribe({
+        next: newSnapshot => {
+          result.push(newSnapshot);
+        },
+        complete: () => {
+          sub.unsubscribe();
+          resolve();
+        },
+      });
+    });
+  }
+
+  return result;
+}

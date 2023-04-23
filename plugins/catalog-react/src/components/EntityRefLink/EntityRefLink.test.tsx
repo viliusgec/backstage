@@ -27,6 +27,7 @@ describe('<EntityRefLink />', () => {
       kind: 'Component',
       metadata: {
         name: 'software',
+        namespace: 'default',
       },
       spec: {
         owner: 'guest',
@@ -39,7 +40,6 @@ describe('<EntityRefLink />', () => {
         '/catalog/:namespace/:kind/:name/*': entityRouteRef,
       },
     });
-
     expect(screen.getByText('component:software')).toHaveAttribute(
       'href',
       '/catalog/default/component/software',

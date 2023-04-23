@@ -25,20 +25,15 @@ import {
 import { useApiHolder } from '@backstage/core-plugin-api';
 import { Observable } from '@backstage/types';
 import { DependencyList, useEffect, useMemo, useRef, useState } from 'react';
-import ObservableImpl from 'zen-observable';
 import {
   EntityRefPresentation,
   EntityRefPresentationSnapshot,
   entityPresentationApiRef,
 } from './EntityPresentationApi';
 
-// Just to not have to recreate a do-nothing observer over and over
-const dummyObserver = new ObservableImpl<EntityRefPresentationSnapshot>(
-  subscriber => {
-    subscriber.complete();
-  },
-);
-
+// This is the one used when there's no presentation API available. It does some
+// stuff that looks odd, like lowercasing things unnecessarily. This is just for
+// backward compatibility so that all tests keep working.
 function fallbackPresentation(
   entityOrRef: Entity | CompoundEntityRef | string,
   context?: {
@@ -67,13 +62,9 @@ function fallbackPresentation(
     result = `${compound.namespace}/${result}`;
   }
 
-  if (context?.defaultKind) {
-    if (
-      compound.kind.toLocaleLowerCase('en-US') !==
-      context.defaultKind.toLocaleLowerCase('en-US')
-    ) {
-      result = `${compound.kind}:${result}`;
-    }
+  const existingKind = compound.kind.toLocaleLowerCase('en-US');
+  if (existingKind !== context?.defaultKind?.toLocaleLowerCase('en-US')) {
+    result = `${existingKind}:${result}`;
   }
 
   return {
@@ -81,7 +72,6 @@ function fallbackPresentation(
       entityRef: entityRef,
       primaryTitle: result,
     },
-    update$: dummyObserver,
   };
 }
 
