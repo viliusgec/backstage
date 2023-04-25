@@ -205,7 +205,7 @@ export const CatalogTable = (props: CatalogTableProps) => {
       resolved: {
         // This name is here for backwards compatibility mostly; the
         // presentation of refs in the table should in general be handled with
-        // EntityRefLink / EntityRef components
+        // EntityRefLink / EntityName components
         name: humanizeEntityRef(entity, {
           defaultKind: 'Component',
         }),
