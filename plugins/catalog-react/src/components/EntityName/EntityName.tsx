@@ -49,6 +49,7 @@ const useStyles = makeStyles(
  */
 export type EntityNameProps = {
   entityRef: Entity | CompoundEntityRef | string;
+  variant?: string;
   defaultKind?: string;
   defaultNamespace?: string;
 };
@@ -59,7 +60,7 @@ export type EntityNameProps = {
  * @public
  */
 export const EntityName = (props: EntityNameProps): JSX.Element => {
-  const { entityRef, defaultKind, defaultNamespace } = props;
+  const { entityRef, variant, defaultKind, defaultNamespace } = props;
 
   const classes = useStyles();
   const { primaryTitle, secondaryTitle, Icon } = useEntityPresentation(
@@ -71,7 +72,7 @@ export const EntityName = (props: EntityNameProps): JSX.Element => {
   let content = <>{primaryTitle}</>;
 
   // Optionally, an icon and wrapper around them both
-  if (Icon) {
+  if (Icon && variant !== 'simple') {
     content = (
       <Box component="span" className={classes.root}>
         {content}
