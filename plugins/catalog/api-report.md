@@ -238,7 +238,7 @@ export class DefaultEntityPresentationApi implements EntityPresentationApi {
 export interface DefaultEntityPresentationApiOptions {
   batchDelay?: HumanDuration;
   cacheTtl?: HumanDuration;
-  catalogApi: CatalogApi;
+  catalogApi?: CatalogApi;
   renderer?: DefaultEntityPresentationApiRenderer;
 }
 

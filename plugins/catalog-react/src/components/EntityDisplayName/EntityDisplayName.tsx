@@ -20,12 +20,12 @@ import React from 'react';
 import { useEntityPresentation } from '../../apis';
 
 /**
- * The available style class keys for {@link EntityName}, under the name
- * "CatalogReactEntityName".
+ * The available style class keys for {@link EntityDisplayName}, under the name
+ * "CatalogReactEntityDisplayName".
  *
  * @public
  */
-export type CatalogReactEntityNameClassKey = 'root' | 'icon';
+export type CatalogReactEntityDisplayNameClassKey = 'root' | 'icon';
 
 const useStyles = makeStyles(
   (theme: Theme) => ({
@@ -39,15 +39,15 @@ const useStyles = makeStyles(
       lineHeight: 0,
     },
   }),
-  { name: 'CatalogReactEntityName' },
+  { name: 'CatalogReactEntityDisplayName' },
 );
 
 /**
- * Props for {@link EntityName}.
+ * Props for {@link EntityDisplayName}.
  *
  * @public
  */
-export type EntityNameProps = {
+export type EntityDisplayNameProps = {
   entityRef: Entity | CompoundEntityRef | string;
   variant?: string;
   defaultKind?: string;
@@ -59,13 +59,15 @@ export type EntityNameProps = {
  *
  * @public
  */
-export const EntityName = (props: EntityNameProps): JSX.Element => {
+export const EntityDisplayName = (
+  props: EntityDisplayNameProps,
+): JSX.Element => {
   const { entityRef, variant, defaultKind, defaultNamespace } = props;
 
   const classes = useStyles();
   const { primaryTitle, secondaryTitle, Icon } = useEntityPresentation(
     entityRef,
-    { variant: 'icon', defaultKind, defaultNamespace },
+    { variant, defaultKind, defaultNamespace },
   );
 
   // The innermost "body" content

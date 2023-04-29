@@ -23,7 +23,7 @@ import {
   EntityRefPresentationSnapshot,
   entityPresentationApiRef,
 } from '../../apis';
-import { EntityName } from './EntityName';
+import { EntityDisplayName } from './EntityDisplayName';
 
 function defer<T>() {
   let resolve = (_value: T) => {};
@@ -33,7 +33,7 @@ function defer<T>() {
   return { promise, resolve };
 }
 
-describe('<EntityName />', () => {
+describe('<EntityDisplayName />', () => {
   const entityPresentationApi = {
     forEntity: jest.fn(),
   };
@@ -55,7 +55,7 @@ describe('<EntityName />', () => {
       <TestApiProvider
         apis={[[entityPresentationApiRef, entityPresentationApi]]}
       >
-        <EntityName entityRef="component:default/foo" />
+        <EntityDisplayName entityRef="component:default/foo" />
       </TestApiProvider>,
     );
 
@@ -79,7 +79,7 @@ describe('<EntityName />', () => {
       <TestApiProvider
         apis={[[entityPresentationApiRef, entityPresentationApi]]}
       >
-        <EntityName entityRef="component:default/foo" />
+        <EntityDisplayName entityRef="component:default/foo" />
       </TestApiProvider>,
     );
 

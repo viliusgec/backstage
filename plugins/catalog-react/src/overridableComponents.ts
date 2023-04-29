@@ -19,8 +19,8 @@ import { StyleRules } from '@material-ui/core/styles/withStyles';
 
 import {
   CatalogReactUserListPickerClassKey,
+  CatalogReactEntityDisplayNameClassKey,
   CatalogReactEntityLifecyclePickerClassKey,
-  CatalogReactEntityNameClassKey,
   CatalogReactEntitySearchBarClassKey,
   CatalogReactEntityTagPickerClassKey,
   CatalogReactEntityOwnerPickerClassKey,
@@ -30,8 +30,8 @@ import {
 /** @public */
 export type CatalogReactComponentsNameToClassKey = {
   CatalogReactUserListPicker: CatalogReactUserListPickerClassKey;
+  CatalogReactEntityDisplayName: CatalogReactEntityDisplayNameClassKey;
   CatalogReactEntityLifecyclePicker: CatalogReactEntityLifecyclePickerClassKey;
-  CatalogReactEntityName: CatalogReactEntityNameClassKey;
   CatalogReactEntitySearchBar: CatalogReactEntitySearchBarClassKey;
   CatalogReactEntityTagPicker: CatalogReactEntityTagPickerClassKey;
   CatalogReactEntityOwnerPicker: CatalogReactEntityOwnerPickerClassKey;

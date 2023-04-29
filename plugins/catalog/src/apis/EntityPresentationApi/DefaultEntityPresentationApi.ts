@@ -113,9 +113,10 @@ export interface DefaultEntityPresentationApiRenderer {
  */
 export interface DefaultEntityPresentationApiOptions {
   /**
-   * The catalog API to use.
+   * The catalog API to use. If you want to use any asynchronous features, you
+   * must supply one.
    */
-  catalogApi: CatalogApi;
+  catalogApi?: CatalogApi;
 
   /**
    * When to expire entities that have been loaded from the catalog API and
@@ -164,7 +165,6 @@ export class DefaultEntityPresentationApi implements EntityPresentationApi {
    */
   static createLocal(): EntityPresentationApi {
     return new DefaultEntityPresentationApi({
-      catalogApi: {} as any,
       renderer: createDefaultRenderer({ async: false }),
     });
   }
@@ -186,14 +186,29 @@ export class DefaultEntityPresentationApi implements EntityPresentationApi {
   // was perfectly fine in the first place.
   readonly #cache: Map<string, CacheEntry>;
   readonly #cacheTtlMs: number;
-  readonly #loader: DataLoader<string, Entity | undefined>;
+  readonly #loader: DataLoader<string, Entity | undefined> | undefined;
   readonly #renderer: DefaultEntityPresentationApiRenderer;
 
   private constructor(options: DefaultEntityPresentationApiOptions) {
-    this.#cacheTtlMs = durationToMs(options.cacheTtl ?? DEFAULT_CACHE_TTL);
+    const cacheTtl = options.cacheTtl ?? DEFAULT_CACHE_TTL;
+    const batchDelay = options.batchDelay ?? DEFAULT_BATCH_DELAY;
+    const renderer = options.renderer ?? createDefaultRenderer({ async: true });
+
+    if (renderer.async) {
+      if (!options.catalogApi) {
+        throw new TypeError(`Asynchronous rendering requires a catalog API`);
+      }
+      this.#loader = this.#createLoader({
+        cacheTtl,
+        batchDelay,
+        renderer,
+        catalogApi: options.catalogApi,
+      });
+    }
+
+    this.#cacheTtlMs = durationToMs(cacheTtl);
     this.#cache = new Map();
-    this.#loader = this.#createLoader(options);
-    this.#renderer = options.renderer ?? createDefaultRenderer({ async: true });
+    this.#renderer = renderer;
   }
 
   /** {@inheritdoc @backstage/plugin-catalog-react#EntityPresentationApi.forEntity} */
@@ -230,7 +245,7 @@ export class DefaultEntityPresentationApi implements EntityPresentationApi {
           let aborted = false;
 
           Promise.resolve()
-            .then(() => this.#loader.load(entityRef))
+            .then(() => this.#loader?.load(entityRef))
             .then(newEntity => {
               if (
                 !aborted &&
@@ -298,7 +313,10 @@ export class DefaultEntityPresentationApi implements EntityPresentationApi {
     const cachedEntity: Entity | undefined = cached?.entity;
     const cacheNeedsUpdate =
       !cached || Date.now() - cached.updatedAt > this.#cacheTtlMs;
-    const needsLoad = cacheNeedsUpdate && this.#renderer.async !== false;
+    const needsLoad =
+      cacheNeedsUpdate &&
+      this.#renderer.async !== false &&
+      this.#loader !== undefined;
 
     return {
       entity: cachedEntity,
@@ -307,11 +325,14 @@ export class DefaultEntityPresentationApi implements EntityPresentationApi {
     };
   }
 
-  #createLoader(
-    options: DefaultEntityPresentationApiOptions,
-  ): DataLoader<string, Entity | undefined> {
-    const cacheTtl = durationToMs(options.cacheTtl ?? DEFAULT_CACHE_TTL);
-    const batchDelay = durationToMs(options.batchDelay ?? DEFAULT_BATCH_DELAY);
+  #createLoader(options: {
+    catalogApi: CatalogApi;
+    cacheTtl: HumanDuration;
+    batchDelay: HumanDuration;
+    renderer: DefaultEntityPresentationApiRenderer;
+  }): DataLoader<string, Entity | undefined> {
+    const cacheTtlMs = durationToMs(options.cacheTtl);
+    const batchDelayMs = durationToMs(options.batchDelay);
 
     const entityFields = uniq(
       [DEFAULT_ENTITY_FIELDS, options.renderer?.extraFields ?? []].flat(),
@@ -319,7 +340,7 @@ export class DefaultEntityPresentationApi implements EntityPresentationApi {
 
     return new DataLoader(
       async (entityRefs: readonly string[]) => {
-        const { items } = await options.catalogApi.getEntitiesByRefs({
+        const { items } = await options.catalogApi!.getEntitiesByRefs({
           entityRefs: entityRefs as string[],
           fields: [...entityFields],
         });
@@ -344,10 +365,10 @@ export class DefaultEntityPresentationApi implements EntityPresentationApi {
         // expiry cadence of that map. Otherwise it would only fetch a given ref
         // once and then never try again. This cache does therefore not fulfill
         // the same purpose as the one that is in the root of the class.
-        cacheMap: new ExpiryMap(cacheTtl),
+        cacheMap: new ExpiryMap(cacheTtlMs),
         maxBatchSize: 100,
-        batchScheduleFn: batchDelay
-          ? cb => setTimeout(cb, batchDelay)
+        batchScheduleFn: batchDelayMs
+          ? cb => setTimeout(cb, batchDelayMs)
           : undefined,
       },
     );

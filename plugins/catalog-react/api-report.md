@@ -70,19 +70,19 @@ export const CatalogFilterLayout: {
 // @public (undocumented)
 export type CatalogReactComponentsNameToClassKey = {
   CatalogReactUserListPicker: CatalogReactUserListPickerClassKey;
+  CatalogReactEntityDisplayName: CatalogReactEntityDisplayNameClassKey;
   CatalogReactEntityLifecyclePicker: CatalogReactEntityLifecyclePickerClassKey;
-  CatalogReactEntityName: CatalogReactEntityNameClassKey;
   CatalogReactEntitySearchBar: CatalogReactEntitySearchBarClassKey;
   CatalogReactEntityTagPicker: CatalogReactEntityTagPickerClassKey;
   CatalogReactEntityOwnerPicker: CatalogReactEntityOwnerPickerClassKey;
   CatalogReactEntityProcessingStatusPicker: CatalogReactEntityProcessingStatusPickerClassKey;
 };
 
+// @public
+export type CatalogReactEntityDisplayNameClassKey = 'root' | 'icon';
+
 // @public (undocumented)
 export type CatalogReactEntityLifecyclePickerClassKey = 'input';
-
-// @public
-export type CatalogReactEntityNameClassKey = 'root' | 'icon';
 
 // @public (undocumented)
 export type CatalogReactEntityNamespacePickerClassKey = 'input';
@@ -140,6 +140,17 @@ export type DefaultEntityFilters = {
   orphan?: EntityOrphanFilter;
   error?: EntityErrorFilter;
   namespace?: EntityNamespaceFilter;
+};
+
+// @public
+export const EntityDisplayName: (props: EntityDisplayNameProps) => JSX.Element;
+
+// @public
+export type EntityDisplayNameProps = {
+  entityRef: Entity | CompoundEntityRef | string;
+  variant?: string;
+  defaultKind?: string;
+  defaultNamespace?: string;
 };
 
 // @public
@@ -235,16 +246,6 @@ export type EntityLoadingStatus<TEntity extends Entity = Entity> = {
   loading: boolean;
   error?: Error;
   refresh?: VoidFunction;
-};
-
-// @public
-export const EntityName: (props: EntityNameProps) => JSX.Element;
-
-// @public
-export type EntityNameProps = {
-  entityRef: Entity | CompoundEntityRef | string;
-  defaultKind?: string;
-  defaultNamespace?: string;
 };
 
 // @public

@@ -24,7 +24,7 @@ import { Link, LinkProps } from '@backstage/core-components';
 import { useRouteRef } from '@backstage/core-plugin-api';
 import React, { forwardRef } from 'react';
 import { entityRouteRef } from '../../routes';
-import { EntityName } from '../EntityName';
+import { EntityDisplayName } from '../EntityDisplayName';
 
 /**
  * Props for {@link EntityRefLink}.
@@ -58,7 +58,7 @@ export const EntityRefLink = forwardRef<any, EntityRefLinkProps>(
     const entityRoute = useEntityRoute(props.entityRef);
 
     const content = children ?? (
-      <EntityName
+      <EntityDisplayName
         entityRef={entityRef}
         defaultKind={defaultKind}
         defaultNamespace={defaultNamespace}
