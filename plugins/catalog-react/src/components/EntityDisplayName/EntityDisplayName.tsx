@@ -49,7 +49,7 @@ const useStyles = makeStyles(
  */
 export type EntityDisplayNameProps = {
   entityRef: Entity | CompoundEntityRef | string;
-  variant?: string;
+  variant?: 'simple' | string;
   defaultKind?: string;
   defaultNamespace?: string;
 };
@@ -67,23 +67,23 @@ export const EntityDisplayName = (
   const classes = useStyles();
   const { primaryTitle, secondaryTitle, Icon } = useEntityPresentation(
     entityRef,
-    { variant, defaultKind, defaultNamespace },
+    { defaultKind, defaultNamespace },
   );
 
   // The innermost "body" content
   let content = <>{primaryTitle}</>;
 
-  // Optionally, an icon and wrapper around them both
-  if (Icon && variant !== 'simple') {
-    content = (
-      <Box component="span" className={classes.root}>
-        {content}
+  // Optionally an icon, and wrapper around them both
+  content = (
+    <Box component="span" className={classes.root}>
+      {content}
+      {Icon && variant !== 'simple' ? (
         <Box component="span" className={classes.icon}>
           <Icon fontSize="inherit" />
         </Box>
-      </Box>
-    );
-  }
+      ) : null}
+    </Box>
+  );
 
   // Optionally, a tooltip as the outermost layer
   if (secondaryTitle) {

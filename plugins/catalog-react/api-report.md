@@ -148,7 +148,7 @@ export const EntityDisplayName: (props: EntityDisplayNameProps) => JSX.Element;
 // @public
 export type EntityDisplayNameProps = {
   entityRef: Entity | CompoundEntityRef | string;
-  variant?: string;
+  variant?: 'simple' | string;
   defaultKind?: string;
   defaultNamespace?: string;
 };
@@ -300,7 +300,6 @@ export interface EntityPresentationApi {
   forEntity(
     entityOrRef: Entity | string,
     context?: {
-      variant?: string;
       defaultKind?: string;
       defaultNamespace?: string;
     },
@@ -593,7 +592,6 @@ export function useEntityOwnership(): {
 export function useEntityPresentation(
   entityOrRef: Entity | CompoundEntityRef | string,
   context?: {
-    variant?: string;
     defaultKind?: string;
     defaultNamespace?: string;
   },

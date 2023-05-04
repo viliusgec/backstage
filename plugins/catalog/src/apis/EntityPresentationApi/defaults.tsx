@@ -68,11 +68,9 @@ export function createDefaultRenderer(options: {
     render: ({ entityRef, entity, context }) => {
       const compound = parseEntityRef(entityRef);
 
-      const Icon: IconComponent | undefined =
-        context.variant === 'icon'
-          ? DEFAULT_ICONS[compound.kind.toLocaleLowerCase('en-US')] ??
-            UNKNOWN_KIND_ICON
-          : undefined;
+      const Icon =
+        DEFAULT_ICONS[compound.kind.toLocaleLowerCase('en-US')] ??
+        UNKNOWN_KIND_ICON;
 
       if (!entity) {
         let result = compound.name;

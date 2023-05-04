@@ -87,7 +87,6 @@ export interface EntityPresentationApi {
   forEntity(
     entityOrRef: Entity | string,
     context?: {
-      variant?: string;
       defaultKind?: string;
       defaultNamespace?: string;
     },

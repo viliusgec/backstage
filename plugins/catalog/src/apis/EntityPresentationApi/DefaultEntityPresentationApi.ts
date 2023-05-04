@@ -97,7 +97,6 @@ export interface DefaultEntityPresentationApiRenderer {
     loading: boolean;
     entity: Entity | undefined;
     context: {
-      variant?: string;
       defaultKind?: string;
       defaultNamespace?: string;
     };
@@ -215,7 +214,6 @@ export class DefaultEntityPresentationApi implements EntityPresentationApi {
   forEntity(
     entityOrRef: Entity | string,
     context?: {
-      variant?: string;
       defaultKind?: string;
       defaultNamespace?: string;
     },
