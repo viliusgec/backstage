@@ -81,8 +81,7 @@ export interface EntityPresentationApi {
    *   in an entity, it is assumed that it is not a partial one - i.e. only pass
    *   in an entity if you know that it was fetched in such a way that it
    *   contains all of the fields that the representation renderer needs.
-   * @param context - Contextual information that may affect the rendering of
-   *   the entity.
+   * @param context - Contextual information that may affect the presentation.
    */
   forEntity(
     entityOrRef: Entity | string,

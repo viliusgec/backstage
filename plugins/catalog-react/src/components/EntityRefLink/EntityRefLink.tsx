@@ -35,7 +35,7 @@ export type EntityRefLinkProps = {
   entityRef: Entity | CompoundEntityRef | string;
   defaultKind?: string;
   defaultNamespace?: string;
-  /** @deprecated This option is no longer used; presentation is requested through the {@link entityPresentationApiRef} instead */
+  /** @deprecated This option should no longer be used; presentation is requested through the {@link entityPresentationApiRef} instead */
   title?: string;
   children?: React.ReactNode;
 } & Omit<LinkProps, 'to'>;
@@ -57,7 +57,7 @@ export const EntityRefLink = forwardRef<any, EntityRefLinkProps>(
     } = props;
     const entityRoute = useEntityRoute(props.entityRef);
 
-    const content = children ?? (
+    const content = children ?? title ?? (
       <EntityDisplayName
         entityRef={entityRef}
         defaultKind={defaultKind}

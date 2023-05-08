@@ -32,7 +32,7 @@ describe('DefaultEntityPresentationApi', () => {
         entity: undefined,
         primaryTitle: 'test',
         secondaryTitle: 'component:default/test',
-        Icon: undefined,
+        Icon: expect.anything(),
       },
       update$: undefined,
     });
@@ -45,7 +45,7 @@ describe('DefaultEntityPresentationApi', () => {
         entity: undefined,
         primaryTitle: 'component:test',
         secondaryTitle: 'component:default/test',
-        Icon: undefined,
+        Icon: expect.anything(),
       },
       update$: undefined,
     });
@@ -60,7 +60,7 @@ describe('DefaultEntityPresentationApi', () => {
         entity: undefined,
         primaryTitle: 'default/test',
         secondaryTitle: 'component:default/test',
-        Icon: undefined,
+        Icon: expect.anything(),
       },
       update$: undefined,
     });
@@ -83,7 +83,7 @@ describe('DefaultEntityPresentationApi', () => {
         entity: entity,
         primaryTitle: 'test',
         secondaryTitle: 'component:default/test | service',
-        Icon: undefined,
+        Icon: expect.anything(),
       },
       update$: undefined,
     });
@@ -123,7 +123,7 @@ describe('DefaultEntityPresentationApi', () => {
         entity: undefined,
         primaryTitle: 'test',
         secondaryTitle: 'component:default/test',
-        Icon: undefined,
+        Icon: expect.anything(),
       },
       {
         entityRef: 'component:default/test',
@@ -141,7 +141,7 @@ describe('DefaultEntityPresentationApi', () => {
         },
         primaryTitle: 'test',
         secondaryTitle: 'component:default/test | service',
-        Icon: undefined,
+        Icon: expect.anything(),
       },
     ]);
 
@@ -165,7 +165,7 @@ describe('DefaultEntityPresentationApi', () => {
         },
         primaryTitle: 'test',
         secondaryTitle: 'component:default/test | service',
-        Icon: undefined,
+        Icon: expect.anything(),
       },
     ]);
 

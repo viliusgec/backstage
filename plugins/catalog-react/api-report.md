@@ -143,6 +143,15 @@ export type DefaultEntityFilters = {
 };
 
 // @public
+export function defaultEntityPresentation(
+  entityOrRef: Entity | CompoundEntityRef | string,
+  context?: {
+    defaultKind?: string;
+    defaultNamespace?: string;
+  },
+): EntityRefPresentationSnapshot;
+
+// @public
 export const EntityDisplayName: (props: EntityDisplayNameProps) => JSX.Element;
 
 // @public

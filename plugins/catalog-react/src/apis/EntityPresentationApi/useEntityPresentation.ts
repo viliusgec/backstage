@@ -26,7 +26,7 @@ import {
   EntityRefPresentationSnapshot,
   entityPresentationApiRef,
 } from './EntityPresentationApi';
-import { fallbackPresentation } from './fallbackPresentation';
+import { defaultEntityPresentation } from './defaultEntityPresentation';
 import { useUpdatingObservable } from './useUpdatingObservable';
 
 /**
@@ -61,7 +61,7 @@ export function useEntityPresentation(
   const presentation = useMemo<EntityRefPresentation>(
     () => {
       if (!entityPresentationApi) {
-        return fallbackPresentation(entityOrRef, context);
+        return { snapshot: defaultEntityPresentation(entityOrRef, context) };
       }
 
       return entityPresentationApi.forEntity(

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { DEFAULT_NAMESPACE, parseEntityRef } from '@backstage/catalog-model';
 import { IconComponent } from '@backstage/core-plugin-api';
+import { defaultEntityPresentation } from '@backstage/plugin-catalog-react';
 import { HumanDuration } from '@backstage/types';
 import ApartmentIcon from '@material-ui/icons/Apartment';
 import BusinessIcon from '@material-ui/icons/Business';
@@ -26,7 +26,6 @@ import LocationOnIcon from '@material-ui/icons/LocationOn';
 import MemoryIcon from '@material-ui/icons/Memory';
 import PeopleIcon from '@material-ui/icons/People';
 import PersonIcon from '@material-ui/icons/Person';
-import get from 'lodash/get';
 import { DefaultEntityPresentationApiRenderer } from './DefaultEntityPresentationApi';
 
 export const DEFAULT_CACHE_TTL: HumanDuration = { seconds: 30 };
@@ -66,65 +65,13 @@ export function createDefaultRenderer(options: {
     async: options.async,
 
     render: ({ entityRef, entity, context }) => {
-      const compound = parseEntityRef(entityRef);
-
-      const Icon =
-        DEFAULT_ICONS[compound.kind.toLocaleLowerCase('en-US')] ??
-        UNKNOWN_KIND_ICON;
-
-      if (!entity) {
-        let result = compound.name;
-
-        const expectedNamespace = context.defaultNamespace ?? DEFAULT_NAMESPACE;
-        if (
-          context.defaultNamespace &&
-          compound.namespace.toLocaleLowerCase('en-US') !==
-            expectedNamespace.toLocaleLowerCase('en-US')
-        ) {
-          result = `${compound.namespace}/${result}`;
-        }
-
-        const expectedKind = context.defaultKind;
-        if (
-          context.defaultKind &&
-          compound.kind.toLocaleLowerCase('en-US') !==
-            expectedKind?.toLocaleLowerCase('en-US')
-        ) {
-          result = `${compound.kind}:${result}`;
-        }
-
-        return {
-          snapshot: {
-            primaryTitle: result,
-            secondaryTitle: entityRef,
-            Icon,
-          },
-          loadEntity: true,
-        };
-      }
-
-      const primary = [
-        get(entity, 'spec.profile.displayName'),
-        get(entity, 'metadata.title'),
-        get(entity, 'metadata.name'),
-        entityRef,
-      ].filter(candidate => candidate && typeof candidate === 'string')[0]!;
-
-      const secondary = [
-        primary !== entityRef ? entityRef : undefined,
-        get(entity, 'spec.type'),
-        get(entity, 'metadata.description'),
-      ]
-        .filter(candidate => candidate && typeof candidate === 'string')
-        .join(' | ');
-
+      const presentation = defaultEntityPresentation(
+        entity || entityRef,
+        context,
+      );
       return {
-        snapshot: {
-          primaryTitle: primary,
-          secondaryTitle: secondary || undefined,
-          Icon,
-        },
-        loadEntity: true,
+        snapshot: presentation,
+        loadEntity: options.async,
       };
     },
   };
