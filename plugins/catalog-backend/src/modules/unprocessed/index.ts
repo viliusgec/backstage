@@ -60,7 +60,6 @@ export const getPendingEntities = async (
   database: Knex,
   owner?: string,
 ): Promise<HydratedRefreshState[]> => {
-  console.log(owner);
   const res = (
     await database('refresh_state.*')
       .from('refresh_state')
