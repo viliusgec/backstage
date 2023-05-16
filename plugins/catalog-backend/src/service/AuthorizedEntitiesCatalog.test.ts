@@ -33,6 +33,7 @@ describe('AuthorizedEntitiesCatalog', () => {
     refresh: jest.fn(),
     listAncestors: jest.fn(),
     queryEntities: jest.fn(),
+    unprocessed: jest.fn(),
   };
   const fakePermissionApi = {
     authorize: jest.fn(),
