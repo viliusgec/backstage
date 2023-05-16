@@ -332,7 +332,7 @@ export async function createRouter(
   return router;
 }
 
-function getBearerToken(
+export function getBearerToken(
   authorizationHeader: string | undefined,
 ): string | undefined {
   if (typeof authorizationHeader !== 'string') {

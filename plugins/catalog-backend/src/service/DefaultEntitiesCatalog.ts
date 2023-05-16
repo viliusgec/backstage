@@ -40,6 +40,7 @@ import {
   QueryEntitiesRequest,
   QueryEntitiesResponse,
   EntityOrder,
+  UnprocessedEntitiesRequest,
 } from '../catalog/types';
 import {
   DbFinalEntitiesRow,
@@ -56,6 +57,8 @@ import {
   isQueryEntitiesCursorRequest,
   isQueryEntitiesInitialRequest,
 } from './util';
+import { getFailedEntities, getPendingEntities } from '../modules/unprocessed';
+import { HydratedRefreshState } from '../modules/unprocessed/types';
 
 const defaultSortField: EntityOrder = {
   field: 'metadata.uid',
@@ -697,6 +700,15 @@ export class DefaultEntitiesCatalog implements EntitiesCatalog {
     }
 
     return { facets };
+  }
+
+  async unprocessed(
+    request: UnprocessedEntitiesRequest,
+  ): Promise<HydratedRefreshState[]> {
+    if (request.reason === 'pending') {
+      return getPendingEntities(this.database);
+    }
+    return getFailedEntities(this.database);
   }
 }
 

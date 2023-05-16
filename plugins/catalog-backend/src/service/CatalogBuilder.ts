@@ -99,6 +99,7 @@ import {
 import { AuthorizedLocationService } from './AuthorizedLocationService';
 import { DefaultProviderDatabase } from '../database/DefaultProviderDatabase';
 import { DefaultCatalogDatabase } from '../database/DefaultCatalogDatabase';
+import { addUnprocessedEntitiesRoutes } from '../modules/unprocessed';
 
 /**
  * This is a duplicate of the alpha `CatalogPermissionRule` type, for use in the stable API.
@@ -557,6 +558,7 @@ export class CatalogBuilder {
       permissionIntegrationRouter,
     });
 
+    await addUnprocessedEntitiesRoutes(entitiesCatalog, router);
     await connectEntityProviders(providerDatabase, entityProviders);
 
     return {

@@ -38,9 +38,11 @@ import {
   EntityFilter,
   QueryEntitiesRequest,
   QueryEntitiesResponse,
+  UnprocessedEntitiesRequest,
 } from '../catalog/types';
 import { basicEntityFilter } from './request/basicEntityFilter';
 import { isQueryEntitiesCursorRequest } from './util';
+import { HydratedRefreshState } from '../modules/unprocessed/types';
 
 export class AuthorizedEntitiesCatalog implements EntitiesCatalog {
   constructor(
@@ -262,6 +264,23 @@ export class AuthorizedEntitiesCatalog implements EntitiesCatalog {
           ),
       ),
     };
+  }
+
+  async unprocessed(
+    request: UnprocessedEntitiesRequest,
+  ): Promise<HydratedRefreshState[]> {
+    const authorizeDecision = (
+      await this.permissionApi.authorizeConditional(
+        [{ permission: catalogEntityReadPermission }],
+        { token: request?.authorizationToken },
+      )
+    )[0];
+    if (authorizeDecision.result === AuthorizeResult.DENY) {
+      return [];
+    }
+    // TODO: conditional filtering
+
+    return this.entitiesCatalog.unprocessed(request);
   }
 
   async facets(request: EntityFacetsRequest): Promise<EntityFacetsResponse> {

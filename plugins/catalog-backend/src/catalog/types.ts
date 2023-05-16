@@ -15,6 +15,10 @@
  */
 
 import { Entity } from '@backstage/catalog-model';
+import {
+  HydratedRefreshState,
+  RefreshState,
+} from '../modules/unprocessed/types';
 
 /**
  * A filter expression for entities.
@@ -153,6 +157,11 @@ export interface EntityFacetsRequest {
   authorizationToken?: string;
 }
 
+export interface UnprocessedEntitiesRequest {
+  reason: 'failed' | 'pending';
+  authorizationToken?: string;
+}
+
 /**
  * The response shape for {@link EntitiesCatalog.facets}.
  */
@@ -210,6 +219,15 @@ export interface EntitiesCatalog {
    * @param request - Request options
    */
   facets(request: EntityFacetsRequest): Promise<EntityFacetsResponse>;
+
+  /**
+   * Fetches unprocessed entities.
+   *
+   * @param request = request options
+   */
+  unprocessed(
+    request: UnprocessedEntitiesRequest,
+  ): Promise<HydratedRefreshState[]>;
 }
 
 /**
