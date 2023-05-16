@@ -28,6 +28,7 @@ export const addUnprocessedEntitiesRoutes = (
       return res.json(
         await entitiesCatalog.unprocessed({
           reason: 'failed',
+          owner: req.query.owner as string,
           authorizationToken: getBearerToken(req.header('authorization')),
         }),
       );
@@ -36,6 +37,7 @@ export const addUnprocessedEntitiesRoutes = (
       return res.json(
         await entitiesCatalog.unprocessed({
           reason: 'pending',
+          owner: req.query.owner as string,
           authorizationToken: getBearerToken(req.header('authorization')),
         }),
       );
@@ -56,30 +58,44 @@ function hydrateRefreshState(r: RefreshState): HydratedRefreshState {
 
 export const getPendingEntities = async (
   database: Knex,
+  owner?: string,
 ): Promise<HydratedRefreshState[]> => {
-  const res = await database('refresh_state.*')
-    .from('refresh_state')
-    .leftJoin(
-      'final_entities',
-      'final_entities.entity_id',
-      'refresh_state.entity_id',
-    )
-    .whereNull('final_entities.entity_id');
+  console.log(owner);
+  const res = (
+    await database('refresh_state.*')
+      .from('refresh_state')
+      .leftJoin(
+        'final_entities',
+        'final_entities.entity_id',
+        'refresh_state.entity_id',
+      )
+      .whereNull('final_entities.entity_id')
+  ).map(hydrateRefreshState);
+  if (owner) {
+    return res.filter(r => r.unprocessed_entity.spec?.owner === owner);
+  }
 
-  return res.map(hydrateRefreshState);
+  return res;
 };
 
 export const getFailedEntities = async (
   database: Knex,
+  owner?: string,
 ): Promise<HydratedRefreshState[]> => {
-  const res = await database('refresh_state.*')
-    .from('refresh_state')
-    .rightJoin(
-      'final_entities',
-      'final_entities.entity_id',
-      'refresh_state.entity_id',
-    )
-    .whereNull('final_entities.final_entity');
+  const res = (
+    await database('refresh_state.*')
+      .from('refresh_state')
+      .rightJoin(
+        'final_entities',
+        'final_entities.entity_id',
+        'refresh_state.entity_id',
+      )
+      .whereNull('final_entities.final_entity')
+  ).map(hydrateRefreshState);
 
-  return res.map(hydrateRefreshState);
+  if (owner) {
+    return res.filter(r => r.unprocessed_entity.spec?.owner === owner);
+  }
+
+  return res;
 };

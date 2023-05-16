@@ -15,10 +15,7 @@
  */
 
 import { Entity } from '@backstage/catalog-model';
-import {
-  HydratedRefreshState,
-  RefreshState,
-} from '../modules/unprocessed/types';
+import { HydratedRefreshState } from '../modules/unprocessed/types';
 
 /**
  * A filter expression for entities.
@@ -159,6 +156,7 @@ export interface EntityFacetsRequest {
 
 export interface UnprocessedEntitiesRequest {
   reason: 'failed' | 'pending';
+  owner?: string;
   authorizationToken?: string;
 }
 

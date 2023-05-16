@@ -706,9 +706,9 @@ export class DefaultEntitiesCatalog implements EntitiesCatalog {
     request: UnprocessedEntitiesRequest,
   ): Promise<HydratedRefreshState[]> {
     if (request.reason === 'pending') {
-      return getPendingEntities(this.database);
+      return getPendingEntities(this.database, request.owner);
     }
-    return getFailedEntities(this.database);
+    return getFailedEntities(this.database, request.owner);
   }
 }
 
