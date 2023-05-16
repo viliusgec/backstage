@@ -327,9 +327,7 @@
       {
         "type": "category",
         "label": "Deploying on a cloud provider with Backstage Deploy",
-        "items": [
-          "deployment/backstage-deploy/aws"
-        ]
+        "items": ["deployment/backstage-deploy/aws"]
       }
     ],
     "Designing for Backstage": [
