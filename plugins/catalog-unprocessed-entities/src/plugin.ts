@@ -26,6 +26,11 @@ import {
   catalogUnprocessedEntitiesApiRef,
 } from './api';
 
+/**
+ * Plugin entry point
+ *
+ * @public
+ */
 export const catalogUnprocessedEntitiesPlugin = createPlugin({
   id: 'catalog-unprocessed-entities',
   routes: {
@@ -41,6 +46,11 @@ export const catalogUnprocessedEntitiesPlugin = createPlugin({
   ],
 });
 
+/**
+ * Tool page for the Catalog Unprocessed Entities Plugin
+ *
+ * @public
+ */
 export const CatalogUnprocessedEntitiesPage =
   catalogUnprocessedEntitiesPlugin.provide(
     createRoutableExtension({

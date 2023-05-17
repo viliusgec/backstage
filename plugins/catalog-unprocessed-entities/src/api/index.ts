@@ -17,11 +17,21 @@ import { DiscoveryApi, createApiRef } from '@backstage/core-plugin-api';
 import { ResponseError } from '@backstage/errors';
 import { UnprocessedEntity } from '../types';
 
+/**
+ * {@link @backstage/core-plugin-api#ApiRef} for the {@link CatalogUnprocessedEntitiesApi}
+ *
+ * @public
+ */
 export const catalogUnprocessedEntitiesApiRef =
   createApiRef<CatalogUnprocessedEntitiesApi>({
     id: 'plugin.catalog-unprocessed-entities.service',
   });
 
+/**
+ * API client for the Catalog Unprocessed Entities plugin
+ *
+ * @public
+ */
 export class CatalogUnprocessedEntitiesApi {
   url: string = '';
 
