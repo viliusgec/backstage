@@ -27,7 +27,7 @@ import { UnprocessedEntity } from '../types';
 
 import { EntityDialog } from './EntityDialog';
 import { useApi } from '@backstage/core-plugin-api';
-import { useAsync } from 'react-use';
+import useAsync from 'react-use/lib/useAsync';
 import { catalogUnprocessedEntitiesApiRef } from '../api';
 
 export const PendingEntities = () => {

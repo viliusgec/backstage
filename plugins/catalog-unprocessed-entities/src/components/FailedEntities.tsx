@@ -29,7 +29,7 @@ import { Box, Typography, makeStyles } from '@material-ui/core';
 import { UnprocessedEntity } from '../types';
 import { EntityDialog } from './EntityDialog';
 import { catalogUnprocessedEntitiesApiRef } from '../api';
-import { useAsync } from 'react-use';
+import useAsync from 'react-use/lib/useAsync';
 
 const useStyles = makeStyles((theme: BackstageThemeOptions) => ({
   errorBox: {
