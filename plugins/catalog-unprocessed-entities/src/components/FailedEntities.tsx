@@ -43,7 +43,10 @@ const useStyles = makeStyles((theme: BackstageThemeOptions) => ({
     width: '100%',
     fontWeight: 'bold',
   },
-  errorMessage: {},
+  successMessage: {
+    background: theme.palette.infoBackground,
+    color: theme.palette.infoText,
+  },
 }));
 
 const RenderErrorContext = ({
@@ -126,7 +129,11 @@ export const FailedEntities = () => {
         options={{ pageSize: 40, search: true }}
         columns={columns}
         data={data || []}
-        emptyContent={<div>No failed entities found</div>}
+        emptyContent={
+          <Typography className={classes.successMessage}>
+            No failed entities found
+          </Typography>
+        }
         detailPanel={({ rowData }) => {
           const errors = (rowData as UnprocessedEntity).errors;
           return (
@@ -137,10 +144,7 @@ export const FailedEntities = () => {
                     <Typography className={classes.errorTitle}>
                       {e.name}
                     </Typography>
-                    <MarkdownContent
-                      className={classes.errorMessage}
-                      content={e.message}
-                    />
+                    <MarkdownContent content={e.message} />
                     <RenderErrorContext
                       error={e}
                       rowData={rowData as UnprocessedEntity}

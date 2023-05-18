@@ -21,7 +21,7 @@ import {
   TableColumn,
   Table,
 } from '@backstage/core-components';
-import { Typography } from '@material-ui/core';
+import { Typography, makeStyles } from '@material-ui/core';
 
 import { UnprocessedEntity } from '../types';
 
@@ -29,8 +29,18 @@ import { EntityDialog } from './EntityDialog';
 import { useApi } from '@backstage/core-plugin-api';
 import useAsync from 'react-use/lib/useAsync';
 import { catalogUnprocessedEntitiesApiRef } from '../api';
+import { BackstageTheme } from '@backstage/theme';
+
+const useStyles = makeStyles((theme: BackstageTheme) => ({
+  successMessage: {
+    background: theme.palette.infoBackground,
+    color: theme.palette.infoText,
+    padding: theme.spacing(2),
+  },
+}));
 
 export const PendingEntities = () => {
+  const classes = useStyles();
   const unprocessedApi = useApi(catalogUnprocessedEntitiesApiRef);
   const {
     loading,
@@ -75,7 +85,11 @@ export const PendingEntities = () => {
         options={{ pageSize: 40 }}
         columns={columns}
         data={data || []}
-        emptyContent={<div>No pending entities found</div>}
+        emptyContent={
+          <Typography className={classes.successMessage}>
+            No pending entities found
+          </Typography>
+        }
       />
     </>
   );
