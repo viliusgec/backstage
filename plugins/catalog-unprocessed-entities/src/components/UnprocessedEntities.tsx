@@ -22,30 +22,35 @@ import { TabContext, TabList, TabPanel } from '@material-ui/lab';
 import { FailedEntities } from './FailedEntities';
 import { PendingEntities } from './PendingEntities';
 
-export const UnprocessedEntities = () => {
+export const UnprocessedEntitiesContent = () => {
   const [tab, setTab] = useState('failed');
-  const handleChange = (_event: React.ChangeEvent<{}>, newValue: string) => {
-    setTab(newValue);
+  const handleChange = (_event: React.ChangeEvent<{}>, tabValue: string) => {
+    setTab(tabValue);
   };
 
   return (
+    <Content>
+      <TabContext value={tab}>
+        <TabList onChange={handleChange}>
+          <Tab label="Failed" value="failed" />
+          <Tab label="Pending" value="pending" />
+        </TabList>
+        <TabPanel value="failed">
+          <FailedEntities />
+        </TabPanel>
+        <TabPanel value="pending">
+          <PendingEntities />
+        </TabPanel>
+      </TabContext>
+    </Content>
+  );
+};
+
+export const UnprocessedEntities = () => {
+  return (
     <Page themeId="tool">
       <Header title="Unprocessed Entitites" />
-
-      <Content>
-        <TabContext value={tab}>
-          <TabList onChange={handleChange}>
-            <Tab label="Failed" value="failed" />
-            <Tab label="Pending" value="pending" />
-          </TabList>
-          <TabPanel value="failed">
-            <FailedEntities />
-          </TabPanel>
-          <TabPanel value="pending">
-            <PendingEntities />
-          </TabPanel>
-        </TabContext>
-      </Content>
+      <UnprocessedEntitiesContent />
     </Page>
   );
 };
