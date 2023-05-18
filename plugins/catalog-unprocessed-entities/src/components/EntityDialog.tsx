@@ -23,9 +23,8 @@ import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
 import CloseIcon from '@material-ui/icons/Close';
 import DescriptionIcon from '@material-ui/icons/Description';
 
-import { Highlight, themes } from 'prism-react-renderer';
-
 import { UnprocessedEntity } from './../types';
+import { CodeSnippet } from '@backstage/core-components';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -60,28 +59,11 @@ export const EntityDialog = ({ entity }: { entity: UnprocessedEntity }) => {
 
   const dialogContent = () => {
     return (
-      <Highlight
-        code={JSON.stringify(entity, null, 4)}
-        theme={themes.vsDark}
+      <CodeSnippet
         language="json"
-      >
-        {({ className, style, tokens, getLineProps, getTokenProps }) => {
-          return (
-            <pre
-              className={`${className} ${classes.entity} ${classes.codeBox}`}
-              style={{ ...style }}
-            >
-              {tokens.map((line, i) => (
-                <div {...getLineProps({ line, key: i })}>
-                  {line.map((token, key) => (
-                    <span {...getTokenProps({ token, key })} />
-                  ))}
-                </div>
-              ))}
-            </pre>
-          );
-        }}
-      </Highlight>
+        showLineNumbers
+        text={JSON.stringify(entity, null, 4)}
+      />
     );
   };
 
