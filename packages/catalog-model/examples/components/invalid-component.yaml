@@ -2,7 +2,7 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: invalid component
-  description: An Invalid Component
+  description: An Invalid Component with a name that doesn't comply to the restrictions
   labels:
     goVersion: go1.15.3
     category: music
