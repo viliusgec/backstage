@@ -1,5 +1,11 @@
 # @backstage/plugin-techdocs
 
+## 1.6.3
+
+### Patch Changes
+
+- 956d09e8ea68: Change deprecated local references to import from shared `plugin-techdocs-react` plugin
+
 ## 1.6.2
 
 ### Patch Changes

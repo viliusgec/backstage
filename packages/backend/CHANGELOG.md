@@ -1,5 +1,13 @@
 # example-backend
 
+## 0.2.84
+
+### Patch Changes
+
+- Updated dependencies
+  - @backstage/plugin-linguist-backend@0.3.0
+  - example-app@0.2.84
+
 ## 0.2.83
 
 ### Patch Changes

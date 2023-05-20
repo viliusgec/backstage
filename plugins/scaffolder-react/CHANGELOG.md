@@ -1,5 +1,11 @@
 # @backstage/plugin-scaffolder-react
 
+## 1.4.1
+
+### Patch Changes
+
+- 84a5c7724c7e: fixed refresh problem when backstage backend disconnects without any feedback to user. Now we send a generic message and try to reconnect after 15 seconds
+
 ## 1.4.0
 
 ### Minor Changes

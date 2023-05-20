@@ -1,5 +1,11 @@
 # @backstage/plugin-scaffolder-backend-module-gitlab
 
+## 0.2.1
+
+### Patch Changes
+
+- f5a66052f04f: Tweak README
+
 ## 0.2.0
 
 ### Minor Changes
